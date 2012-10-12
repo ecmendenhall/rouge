@@ -2,11 +2,14 @@
 
 source 'https://rubygems.org'
 
-gem 'term-ansicolor'
+gem 'rake'
 
-group :test, :development do
-  gem 'rake'
+group :test do
   gem 'rspec'
+  gem 'term-ansicolor'
+end
+
+group :development do
   gem 'autotest'
   gem 'autotest-growl'
   gem 'autotest-fsevent'
