@@ -33,18 +33,18 @@
   (is (= 2 (nth [1 2 3] 1)))
   (is (= 3 (nth [1 2 3] 2))))
 
-(testing "macroexpand"
+#_(testing "macroexpand"
   (is (= 6 (let [f #(* % 2)]
              (do
                (defmacro a [x] `(f ~x))
                (macroexpand '(a 3)))))))
 
-(testing "var passing"
+#_(testing "var passing"
   (is (= #'my-var (do
                     (def my-var 4)
                     (let [take-var (fn [v] v)]
                       (take-var #'my-var))))))
 
-(testing "for")
+#_(testing "for")
 
 ; vim: set ft=clojure:
