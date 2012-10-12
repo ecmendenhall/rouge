@@ -1,4 +1,4 @@
-# rouge
+# rouge [![Build Status](https://secure.travis-ci.org/unnali/rouge.png)](http://travis-ci.org/unnali/rouge)
 
 Ruby + Clojure = Rouge.
 
