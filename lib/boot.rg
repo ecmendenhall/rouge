@@ -32,6 +32,11 @@
 (defn reduce [f coll]
   (.inject coll | f))
 
+(defmacro when [cond & body]
+  `(if ~cond
+     (do
+       ~@body)))
+
 (defn map [f coll]
   ; XXX lazy seq
   (.map coll | f))

@@ -63,7 +63,7 @@ class Rouge::Reader
 
   def keyword
     begin
-      slurp /:"/
+      slurp(/:"/)
       @n -= 1
       s = string
       s.intern
@@ -252,6 +252,10 @@ class Rouge::Reader
     when "'"
       consume
       Rouge::Cons[Rouge::Symbol[:var], lex]
+    when "_"
+      consume
+      lex
+      lex
     else
       reader_raise UnexpectedCharacterError, "#{peek.inspect} in #dispatch"
     end

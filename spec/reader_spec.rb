@@ -383,6 +383,12 @@ describe Rouge::Reader do
       Rouge::Reader.new(@ns, "").ns.should be @ns
     end
   end
+
+  describe "the comment dispatch" do
+    it "should be completely ignored" do
+      @ns.read('#_(xyz abc) :f').should eq :f
+    end
+  end
 end
 
 # vim: set sw=2 et cc=80:

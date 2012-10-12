@@ -50,7 +50,7 @@ class << Rouge::Builtins
 
   def fn(context, *args)
     if args[0].is_a? Rouge::Symbol
-      name = args.shift
+      name = args.shift.name
     end
 
     argv, *body = args
@@ -74,7 +74,7 @@ class << Rouge::Builtins
       block = nil
     end
 
-    lambda {|*args, &blockgiven|
+    fn = lambda {|*args, &blockgiven|
       if !rest ? (args.length != argv.length) : (args.length < argv.length)
         begin
           raise ArgumentError,
@@ -93,8 +93,19 @@ class << Rouge::Builtins
       context.set_here(rest.name, Rouge::Cons[*args[argv.length..-1]]) if rest
       context.set_here(block.name, blockgiven) if block
 
-      self.do(context, *body)
+      begin
+        self.do(context, *body)
+      rescue => e
+        e.backtrace.unshift "(rouge):?: in #{name || "<anonymous>"}"
+        raise e
+      end
     }
+
+    if name
+      fn.define_singleton_method(:name) { name }
+    end
+
+    fn
   end
 
   def _compile_fn(ns, lexicals, *args)
