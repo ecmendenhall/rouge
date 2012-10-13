@@ -2,6 +2,14 @@
 
 Ruby + Clojure = Rouge.
 
+## why?
+
+In no particular order:
+
+* Ruby's gems are fun to use.
+* Quick boot time (currently around 0.1s).
+* Clojure is awesome.
+
 ## quickstart
 
 Rouge is not yet mature enough to have an installer or distributions.  Just
@@ -12,7 +20,7 @@ clone the source and run the `rouge` script to start:
     bundle install
     bin/rouge
 
-You'll see the `user=>` prompt.  Enjoy!
+You'll see the `user=>` prompt.  Enjoy!  (Expect plenty of stack traces.)
 
 ## example
 
