@@ -74,14 +74,10 @@ include:
 
 ## contributions
 
-Yes, please!  The usual dance would be:
+**Yes, please!**  The usual dance would be:
 
-* Fork.
-* Check that tests are passing.  (`master` should always be 100%, but currently
-  this is not the case.)
 * Make a topic branch.
 * Do your tests, do your thing.
-* Make sure you didn't break anything!
 * Pull request!
 
 Note that I've yet to work out copyright or license (will ask on
