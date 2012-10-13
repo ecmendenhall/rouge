@@ -3,7 +3,8 @@
 module Rouge; end
 
 start = Time.now
-Rouge.define_singleton_method :start, lambda {start}
+metaclass = class << Rouge; self; end
+metaclass.send(:define_method, :start) {start}
 
 class << Rouge
   require 'rouge/wrappers'

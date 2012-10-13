@@ -102,7 +102,8 @@ class << Rouge::Builtins
     }
 
     if name
-      fn.define_singleton_method(:name) { name }
+      metaclass = class << fn; self; end
+      metaclass.send(:define_method, :name) { name }
     end
 
     fn

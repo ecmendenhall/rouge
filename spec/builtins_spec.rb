@@ -312,12 +312,7 @@ describe Rouge::Builtins do
       @context.readeval("(defmacro zoom [] b)")
 
       lambda {
-        begin
         @context.readeval("(zoom)")
-        rescue => e
-          STDERR.puts e.backtrace
-          raise
-        end
       }.should raise_exception(Rouge::Namespace::VarNotFoundError, "c")
 
       @context.readeval("(let [c 9] (zoom))").should eq 9
