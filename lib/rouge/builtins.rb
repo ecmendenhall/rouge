@@ -102,8 +102,7 @@ class << Rouge::Builtins
     }
 
     if name
-      metaclass = class << fn; self; end
-      metaclass.send(:define_method, :name) { name }
+      fn.define_singleton_method(:name) { name }
     end
 
     fn
@@ -142,10 +141,10 @@ class << Rouge::Builtins
     lexicals << rest.name if rest
     lexicals << block.name if block
 
-    [Rouge::Symbol[:fn]] +
-      (name ? [name] : []) +
-      [original_argv] +
-      Rouge::Compiler.compile(ns, lexicals, body)
+    [Rouge::Symbol[:fn],
+     *(name ? [name] : []),
+     original_argv,
+     *Rouge::Compiler.compile(ns, lexicals, body)]
   end
 
   def def(context, name, *form)
@@ -437,25 +436,25 @@ class << Rouge::Builtins
     end
 
     form = 
-      [Rouge::Symbol[:try]] +
-      Rouge::Compiler.compile(ns, lexicals, body) +
-      catches.reverse.map do |c|
-        if !c[:bind].is_a?(Rouge::Symbol) or c[:bind].ns
-          raise ArgumentError, "bad catch binding #{c[:bind]}"
-        end
+    [Rouge::Symbol[:try],
+     *Rouge::Compiler.compile(ns, lexicals, body),
+     *catches.reverse.map {|c|
+      if !c[:bind].is_a?(Rouge::Symbol) or c[:bind].ns
+        raise ArgumentError, "bad catch binding #{c[:bind]}"
+      end
 
-        bind_lexicals = lexicals.dup << c[:bind].name
-        Rouge::Cons[Rouge::Symbol[:catch],
-                    Rouge::Compiler.compile(ns, lexicals, c[:class]),
-                    c[:bind],
-                    *c[:body].map {|f|
-                      Rouge::Compiler.compile(ns, bind_lexicals, f)
-                    }]
-      end +
-      (finally ? [Rouge::Cons[Rouge::Symbol[:finally],
-                              *finally.map {|f|
-                                Rouge::Compiler.compile(ns, lexicals, f)
-                              }]] : [])
+      bind_lexicals = lexicals.dup << c[:bind].name
+      Rouge::Cons[Rouge::Symbol[:catch],
+                  Rouge::Compiler.compile(ns, lexicals, c[:class]),
+                  c[:bind],
+                  *c[:body].map {|f|
+                    Rouge::Compiler.compile(ns, bind_lexicals, f)
+                  }]
+    },
+    *(finally ? [Rouge::Cons[Rouge::Symbol[:finally],
+                             *finally.map {|f|
+                               Rouge::Compiler.compile(ns, lexicals, f)
+                             }]] : [])]
   end
 
   def destructure(context, parameters, values, evalled=false, r={})

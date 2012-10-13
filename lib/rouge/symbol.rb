@@ -42,11 +42,7 @@ class Rouge::Symbol
     # split(sep, 0) means a trailing '.' won't become an empty component.  (0
     # is default)  Contrast with split(sep, -1).
     @name_parts =
-      if @name_s.length > 1
-        @name_s.split('.', 0).reject {|s| s.length == 0}.map(&:intern)
-      else
-       [@name]
-      end
+      @name_s.length > 1 ? @name_s.split('.', 0).map(&:intern) : [@name]
 
     @new_sym = (@name_s[-1] == ?. and @name_s.length > 1)
   end

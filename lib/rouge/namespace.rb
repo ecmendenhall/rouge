@@ -114,7 +114,7 @@ end
 
 ns = Rouge::Namespace[:"rouge.builtin"]
 Rouge::Builtins.methods(false).reject {|s| s =~ /^_compile_/}.each do |m|
-  ns.set_here m.intern, Rouge::Builtin[Rouge::Builtins.method(m)]
+  ns.set_here m, Rouge::Builtin[Rouge::Builtins.method(m)]
 end
 Rouge::Builtins::SYMBOLS.each do |name, val|
   ns.set_here name, val

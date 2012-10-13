@@ -187,10 +187,6 @@ class Rouge::Context
     begin
       block.call
     rescue Exception => e
-      if not block.respond_to?(:source_location)
-        raise e
-      end
-
       target = block.source_location.join(':')
       changed = 0
       $!.backtrace.map! {|line|

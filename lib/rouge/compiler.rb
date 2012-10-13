@@ -13,16 +13,13 @@ module Rouge::Compiler
   def self.compile(ns, lexicals, form)
     case form
     when Rouge::Symbol
-      is_new = (form.name_s[-1] == ?. and form.name_s.length > 1)
-      if is_new
-        name = form.name_s[0..-2].to_sym
-      else
-        name = form.name
-      end
+      name = form.name
+      is_new = (name[-1] == ?. and name.length > 1)
+      name = name[0..-2].to_sym if is_new
 
       if !form.ns and
          (lexicals.include?(name) or
-          (name.to_s[0] == ?. and name.to_s.length > 1) or
+          (name[0] == ?. and name.length > 1) or
           [:|, :&].include?(name))
         # TODO: cache found ns/var/context or no. of context parents.
         form
@@ -85,9 +82,11 @@ module Rouge::Compiler
             block = nil
           end
           Rouge::Cons[
-            *([head] +
-              tail.map {|f| compile(ns, lexicals, f)} +
-              (block ? [Rouge::Symbol[:|], block] : []))]
+            head,
+            *tail.map {|f| compile(ns, lexicals, f)},
+            *(block ? [Rouge::Symbol[:|],
+                       block]
+                    : [])]
         end
       end
     when Array

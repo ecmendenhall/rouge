@@ -3,8 +3,7 @@
 module Rouge; end
 
 start = Time.now
-metaclass = class << Rouge; self; end
-metaclass.send(:define_method, :start) {start}
+Rouge.define_singleton_method :start, lambda {start}
 
 class << Rouge
   require 'rouge/wrappers'
@@ -45,7 +44,7 @@ class << Rouge
   end
 
   def relative_to_lib name
-    File.join(File.dirname(File.expand_path(__FILE__)), name)
+    File.join(File.dirname(File.absolute_path(__FILE__)), name)
   end
 end
 

@@ -523,7 +523,7 @@ describe Rouge::Builtins do
 
     describe "compilation" do
       before do
-        @compile = lambda {|rouge, lexicals|
+        @compile = lambda {|rouge, lexicals=[]|
           Rouge::Builtins._compile_try(
             @ns, Set[*lexicals],
             *Rouge::Reader.new(@ns, rouge).lex.to_a)
@@ -532,7 +532,7 @@ describe Rouge::Builtins do
 
       it "should compile the main body" do
         lambda {
-          @compile.call("(a)", [])
+          @compile.call("(a)")
         }.should raise_exception(Rouge::Namespace::VarNotFoundError)
 
         lambda {
