@@ -299,7 +299,7 @@ describe Rouge::Builtins do
     it "should evaluate in the defining context" do
       lambda {
         @context.readeval("(defmacro a [] b)")
-      }.should raise_exception(Rouge::Namespace::VarNotFoundError, "b")
+      }.should raise_exception(Rouge::Namespace::VarNotFoundError)
 
       @context.readeval("(def b 'c)")
 
@@ -314,7 +314,7 @@ describe Rouge::Builtins do
 
       lambda {
         @context.readeval("(zoom)")
-      }.should raise_exception(Rouge::Namespace::VarNotFoundError, "c")
+      }.should raise_exception(Rouge::Namespace::VarNotFoundError)
 
       @context.readeval("(let [c 9] (zoom))").should eq 9
     end
