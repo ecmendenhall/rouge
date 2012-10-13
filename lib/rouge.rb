@@ -45,7 +45,7 @@ class << Rouge
   end
 
   def relative_to_lib name
-    File.join(File.dirname(File.absolute_path(__FILE__)), name)
+    File.join(File.dirname(File.expand_path(__FILE__)), name)
   end
 end
 

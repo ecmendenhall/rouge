@@ -125,6 +125,7 @@ describe Rouge::Builtins do
       Rouge::Compiler.should_receive(:compile).
           with(@ns, kind_of(Set), [:xyzzy]) do |ns, lexicals, f|
         lexicals.should eq Set[:a, :rest, :block]
+        [:xyzzy]
       end
 
       Rouge::Builtins._compile_fn(
@@ -329,15 +330,6 @@ describe Rouge::Builtins do
           ([b c] (vector 'vector ''b (vector 'quote b) (vector 'quote c))))
       ROUGE
 
-      # RESUME: Hijinx around taking values of macros needs to be implicated in
-      # the compiler so that we don't attempt to compile this.
-      #
-      # Put better: we can't take the value of a macro, i.e. it's true that we
-      # can always resolve a macro in our current namespace.  Thus the compiler
-      # should be able to resolve a macro at compile-time and know not to
-      # compile its arguments.
-      #
-      # specs, etc. TODO.
       @context.readeval("(m x)").should eq @ns.read("(a x)")
       @context.readeval("(m x y)").should eq @ns.read("(b x y)")
     end
@@ -347,6 +339,7 @@ describe Rouge::Builtins do
         Rouge::Compiler.should_receive(:compile).
             with(@ns, kind_of(Set), [:foo]) do |ns, lexicals, f|
           lexicals.should eq Set[:quux, :rest, :block]
+          [:foo]
         end
 
         Rouge::Builtins._compile_defmacro(
@@ -364,11 +357,13 @@ describe Rouge::Builtins do
         Rouge::Compiler.should_receive(:compile).
             with(@ns, kind_of(Set), [:a1]) do |ns, lexicals, f|
           lexicals.should eq Set[:f]
+          [:a1]
         end
 
         Rouge::Compiler.should_receive(:compile).
             with(@ns, kind_of(Set), [:a2]) do |ns, lexicals, f|
           lexicals.should eq Set[:g]
+          [:a2]
         end
 
         Rouge::Builtins._compile_defmacro(
@@ -528,7 +523,7 @@ describe Rouge::Builtins do
 
     describe "compilation" do
       before do
-        @compile = lambda {|rouge, lexicals=[]|
+        @compile = lambda {|rouge, lexicals|
           Rouge::Builtins._compile_try(
             @ns, Set[*lexicals],
             *Rouge::Reader.new(@ns, rouge).lex.to_a)
@@ -537,7 +532,7 @@ describe Rouge::Builtins do
 
       it "should compile the main body" do
         lambda {
-          @compile.call("(a)")
+          @compile.call("(a)", [])
         }.should raise_exception(Rouge::Namespace::VarNotFoundError)
 
         lambda {

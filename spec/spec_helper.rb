@@ -5,7 +5,7 @@ RSpec.configure do |config|
 end
 
 def relative_to_spec name
-  File.join(File.dirname(File.absolute_path(__FILE__)), name)
+  File.join(File.dirname(File.expand_path(__FILE__)), name)
 end
 
 # vim: set sw=2 et cc=80:

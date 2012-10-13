@@ -18,7 +18,7 @@ class Rouge::Reader
 
   def lex
     r =
-      case peek
+      case c = peek and c.chr
       when NUMBER
         number
       when /:/
@@ -26,15 +26,15 @@ class Rouge::Reader
       when /"/
         string
       when /\(/
-        Rouge::Cons[*list(')')]
+        Rouge::Cons[*list(?))]
       when /\[/
-        list ']'
+        list ?]
       when /#/
         dispatch
       when SYMBOL
         # SYMBOL after \[ and #, because it includes both
         symbol
-      when /{/
+      when /\{/
         map
       when /'/
         quotation
@@ -49,7 +49,7 @@ class Rouge::Reader
       when nil
         reader_raise EndOfDataError, "in #lex"
       else
-        reader_raise UnexpectedCharacterError, "#{peek.inspect} in #lex"
+        reader_raise UnexpectedCharacterError, "#{peek.chr.inspect} in #lex"
       end
 
     r
@@ -109,7 +109,7 @@ class Rouge::Reader
         end
       end
 
-      s += c
+      s += c.chr
     end
     s.freeze
   end
@@ -138,7 +138,7 @@ class Rouge::Reader
     r = {}
 
     while true
-      if peek == '}'
+      if peek == ?}
         break
       end
       k = lex
@@ -243,16 +243,16 @@ class Rouge::Reader
   def dispatch
     consume
     case peek
-    when '('
+    when ?(
       body, count = dispatch_rewrite_fn(lex, 0)
       Rouge::Cons[
           Rouge::Symbol[:fn],
           (1..count).map {|n| Rouge::Symbol[:"%#{n}"]}.freeze,
           body]
-    when "'"
+    when ?'
       consume
       Rouge::Cons[Rouge::Symbol[:var], lex]
-    when "_"
+    when ?_
       consume
       lex
       lex
@@ -324,15 +324,19 @@ class Rouge::Reader
 
   def slurp re
     @src[@n..-1] =~ re
-    reader_raise UnexpectedCharacterError, "#{@src[@n]} in #slurp #{re}" if !$&
+
+    if !$&
+      reader_raise UnexpectedCharacterError, "#{@src[@n].chr} in #slurp #{re}"
+    end
+
     @n += $&.length
     $&
   end
 
   def peek
-    while @src[@n] =~ /[\s,;]/
+    while c = @src[@n] and c.chr =~ /[\s,;]/
       if $& == ";"
-        while @src[@n] =~ /[^\n]/
+        while c = @src[@n] and c.chr =~ /[^\n]/
           @n += 1
         end
       else
@@ -352,7 +356,7 @@ class Rouge::Reader
   def reader_raise ex, m
     around = 
         "#{@src[[@n - 3, 0].max...[@n, 0].max]}" +
-        "#{@src[@n]}" +
+        "#{c = @src[@n] and c.chr}" +
         "#{(@src[@n + 1..@n + 3] || "").gsub(/\n.*$/, '')}"
 
     line = @src[0...@n].count("\n") + 1
