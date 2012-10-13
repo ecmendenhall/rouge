@@ -1,5 +1,9 @@
 # encoding: utf-8
 
+if RUBY_VERSION < "1.9"
+  STDERR.puts "Rouge will probably not run on anything less than Ruby 1.9."
+end
+
 module Rouge; end
 
 start = Time.now
