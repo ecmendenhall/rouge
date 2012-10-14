@@ -29,7 +29,7 @@ describe Rouge::Seq::ISeq do
     it "should return an empty list if next returns nil" do
       r = double("next result")
       seq.should_receive(:next).and_return(nil)
-      seq.more.should eq [] # XXX: [] or otherwise?
+      seq.more.should eq Rouge::Seq::Empty
     end
   end
 
