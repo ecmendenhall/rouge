@@ -41,6 +41,42 @@ describe Rouge::Seq::ISeq do
       seq.cons(head).should eq Rouge::Cons.new(head, seq)
     end
   end
+
+  describe "the index-access getter" do
+    let(:numbers) { Rouge::Cons[1, 2, 3] }
+
+    it "should get single elements" do
+      numbers[0].should eq 1
+      numbers[1].should eq 2
+    end
+
+    # XXX: unlike Clojure. Thoughts?
+    it "should return nil if an element is not present" do
+      numbers[5].should eq nil
+    end
+
+    it "should work with negative indices" do
+      numbers[-1].should eq 3
+      numbers[-2].should eq 2
+    end
+
+    # XXX: or generic seqs/lazyseqs/arrayseqs ...?
+    # to preserve Ruby interop probably straight Arrays.
+    # We won't be using this form from Rouge itself anyway.
+    it "should return Arrays for ranges" do
+      numbers[0..-1].should eq [1, 2, 3]
+      numbers[0..-2].should eq [1, 2]
+      numbers[0...-2].should eq [1]
+      numbers[2...-1].should eq []
+      numbers[2..-1].should eq [3]
+    end
+  end
+
+  describe "the each method" do
+    it "should return an enumerator without a block" do
+      Rouge::Cons[1].each.should be_an_instance_of Enumerator
+    end
+  end
 end
 
 describe Rouge::Seq do

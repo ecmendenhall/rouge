@@ -23,9 +23,7 @@ module Rouge::Seq
       while i > 0
         cursor = cursor.next
         i -= 1
-        if cursor.nil?
-          raise IndexError
-        end
+        return nil if cursor.nil?
       end
       cursor.first
     end
