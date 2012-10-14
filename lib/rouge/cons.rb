@@ -1,8 +1,11 @@
 # encoding: utf-8
+require 'rouge/seq'
 
 class Rouge::Cons
+  include Rouge::Seq::ISeq
+
   def initialize(head, tail)
-    if tail != Empty and !tail.is_a?(Rouge::Cons)
+    if !tail.is_a?(Rouge::Seq::ISeq)
       raise ArgumentError,
         "tail should be a Rouge::Cons or Empty, not #{tail}"
     end
@@ -15,6 +18,15 @@ class Rouge::Cons
   end
 
   def to_s; inspect; end
+
+  def first
+    @head
+  end
+
+  def next
+    Rouge::Seq.seq
+  end
+
 
   def self.[](*elements)
     head = Empty
@@ -60,6 +72,8 @@ end
 
 Rouge::Cons::Empty = Object.new
 class << Rouge::Cons::Empty
+  include Rouge::Seq::ISeq
+
   def each(&block)
     return self.enum_for(:each) if block.nil?
   end
