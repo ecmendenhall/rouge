@@ -14,7 +14,9 @@ module Rouge::Seq
       s
     end
 
-    def cons(o); raise NotImplementedError; end
+    def cons(o)
+      Rouge::Cons.new(o, self)
+    end
   end
 
   class Array
