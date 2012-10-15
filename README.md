@@ -25,7 +25,9 @@ You'll see the `user=>` prompt.  Enjoy!  (Expect plenty of stack traces.)
 ## example
 
 See [boot.rg](https://github.com/unnali/rouge/blob/master/lib/boot.rg),
-[em-rg](https://github.com/unnali/em-rg), but to demonstrate salient features:
+[em-rg](https://github.com/unnali/em-rg),
+[mechanize-rg](https://github.com/unnali/mechanize-rg), but to demonstrate
+salient features:
 
     ; define a macro
     (defmacro defn [name args & body]
