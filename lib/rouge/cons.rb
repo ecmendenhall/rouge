@@ -7,7 +7,7 @@ class Rouge::Cons
   def initialize(head, tail)
     if !tail.is_a?(Rouge::Seq::ISeq)
       raise ArgumentError,
-        "tail should be a Rouge::Cons or Empty, not #{tail}"
+        "tail should be an ISeq, not #{tail.inspect}"
     end
 
     @head, @tail = head, tail

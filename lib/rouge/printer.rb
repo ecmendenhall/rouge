@@ -18,7 +18,7 @@ module Rouge::Printer
       out << form.inspect
     when String
       out << form.inspect
-    when Rouge::Cons::Empty
+    when Rouge::Seq::Empty
       out << "()"
     when Rouge::Cons
       if form.length == 2 and form[0] == Rouge::Symbol[:quote]
