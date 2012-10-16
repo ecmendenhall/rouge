@@ -1,41 +1,63 @@
 # encoding: utf-8
 
 module Rouge::Seq
-  Empty = Class.new do
-    def inspect; "Rouge::Cons[]"; end
-    def to_s; inspect; end
+  Empty = Object.new
 
-    def first; nil; end
-    def next; nil; end
-  end.new
+  class Cons; end
 
   module ISeq
-    include Enumerable
+    def inspect
+      "(#{to_a.map(&:inspect).join " "})"
+    end
+
+    def to_s; inspect; end
 
     def seq; self; end
 
     def first; raise NotImplementedError; end
-
     def next; raise NotImplementedError; end
-
-    def [](i)
-      cursor = self
-      while i > 0
-        cursor = cursor.next
-        i -= 1
-        return nil if cursor.nil?
-      end
-      cursor.first
-    end
 
     def more
       s = self.next
-      return Empty if s.nil?
-      s
+      if s.nil?
+        Empty
+      else
+        s
+      end
     end
 
     def cons(o)
-      Rouge::Cons.new(o, self)
+      Cons.new(o, self)
+    end
+
+    def length
+      l = 0
+      cursor = self
+
+      while cursor != Empty
+        l += 1
+        cursor = cursor.more
+      end
+
+      l
+    end
+
+    def [](i)
+      if i.is_a? Range
+        return to_a[i]
+      end
+
+      cursor = self
+
+      i += self.length if i < 0
+
+      while i > 0
+        i -= 1
+        cursor = cursor.more
+        return nil if cursor == Empty
+      end
+
+      cursor.first
     end
 
     def ==(cons)
@@ -47,10 +69,10 @@ module Rouge::Seq
 
       yield self.first
 
-      cursor = self.tail
-      while cursor
+      cursor = self.more
+      while cursor != Empty
         yield cursor.first
-        cursor = cursor.next
+        cursor = cursor.more
       end
 
       self
@@ -71,12 +93,50 @@ module Rouge::Seq
     end
 
     def map(&block)
-      Rouge::Cons[*to_a.map(&block)]
+      Cons[*to_a.map(&block)]
     end
   end
 
   class << Empty
     include ISeq
+
+    def inspect; "()"; end
+    def to_s; inspect; end
+
+    def first; nil; end
+    def next; nil; end
+
+    def each(&block)
+      return self.enum_for(:each) if block.nil?
+    end
+  end
+
+  class Cons
+    include ISeq
+
+    def initialize(head, tail)
+      if tail and !tail.is_a?(ISeq)
+        raise ArgumentError, "tail should be an ISeq, not #{tail.inspect}"
+      end
+
+      @head, @tail = head, tail
+    end
+
+    def first; @head; end
+    def next; Rouge::Seq.seq @tail; end
+
+    def self.[](*elements)
+      return Empty if elements.length.zero?
+
+      head = nil
+      (elements.length - 1).downto(0).each do |i|
+        head = new(elements[i], head.freeze)
+      end
+
+      head.freeze
+    end
+
+    attr_reader :head, :tail
   end
 
   class Array
@@ -89,7 +149,7 @@ module Rouge::Seq
 
   def self.seq(form)
     case form
-    when ISeq
+    when ISeq, NilClass
       form
     else
       raise "TODO; unknown seq"
