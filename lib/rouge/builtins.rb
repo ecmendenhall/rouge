@@ -13,7 +13,7 @@ end
 class << Rouge::Builtins
   def let(context, bindings, *body)
     context = Rouge::Context.new context
-    bindings.each_slice(2) do |k, v|
+    bindings.to_a.each_slice(2) do |k, v|
       context.set_here k.name, context.eval(v)
     end
     self.do(context, *body)
@@ -22,7 +22,7 @@ class << Rouge::Builtins
   def _compile_let(ns, lexicals, bindings, *body)
     lexicals = lexicals.dup
 
-    bindings = bindings.each_slice(2).map do |k, v|
+    bindings = bindings.to_a.each_slice(2).map do |k, v|
       if k.ns
         raise Rouge::Context::BadBindingError,
             "cannot LET qualified name"
@@ -90,7 +90,7 @@ class << Rouge::Builtins
       argv.each.with_index do |arg, i|
         context.set_here(arg.name, args[i])
       end
-      context.set_here(rest.name, Rouge::Cons[*args[argv.length..-1]]) if rest
+      context.set_here(rest.name, Rouge::Seq::Cons[*args[argv.length..-1]]) if rest
       context.set_here(block.name, blockgiven) if block
 
       begin
@@ -256,8 +256,8 @@ class << Rouge::Builtins
     if parts[0].is_a? Array
       args, *body = parts
       macro = Rouge::Macro[
-        context.eval(Rouge::Cons[Rouge::Symbol[:fn], args, *body])]
-    elsif parts.all? {|part| part.is_a? Rouge::Cons}
+        context.eval(Rouge::Seq::Cons[Rouge::Symbol[:fn], args, *body])]
+    elsif parts.all? {|part| part.is_a? Rouge::Seq::Cons}
       arities = {}
 
       parts.each do |cons|
@@ -279,7 +279,7 @@ class << Rouge::Builtins
         end
 
         arities[arity] =
-            context.eval(Rouge::Cons[Rouge::Symbol[:fn], args, *body])
+            context.eval(Rouge::Seq::Cons[Rouge::Symbol[:fn], args, *body])
       end
 
       macro = Rouge::Macro[
@@ -311,7 +311,7 @@ class << Rouge::Builtins
       [Rouge::Symbol[:defmacro],
        name,
        *_compile_fn(ns, lexicals, args, *body)[1..-1]]
-    elsif parts.all? {|part| part.is_a? Rouge::Cons}
+    elsif parts.all? {|part| part.is_a? Rouge::Seq::Cons}
       [Rouge::Symbol[:defmacro],
        name,
        *parts.map do |cons|
@@ -322,7 +322,7 @@ class << Rouge::Builtins
               "bad multi-form defmacro component #{args.inspect}"
         end
 
-        Rouge::Cons[*_compile_fn(ns, lexicals, args, *body)[1..-1]]
+        Rouge::Seq::Cons[*_compile_fn(ns, lexicals, args, *body)[1..-1]]
        end]
     else
       raise ArgumentError, "neither single-form defmacro nor multi-form"
@@ -334,9 +334,9 @@ class << Rouge::Builtins
         args[0..-2].map {|f| context.eval f} +
         context.eval(args[-1]).to_a
     # This is a terrible hack.
-    context.eval(Rouge::Cons[
+    context.eval(Rouge::Seq::Cons[
         fun,
-        *args.map {|a| Rouge::Cons[Rouge::Symbol[:quote], a]}])
+        *args.map {|a| Rouge::Seq::Cons[Rouge::Symbol[:quote], a]}])
   end
 
   def var(context, f)
@@ -367,7 +367,7 @@ class << Rouge::Builtins
     return unless body.length > 0
 
     form = body[-1]
-    if form.is_a?(Rouge::Cons) and
+    if form.is_a?(Rouge::Seq::Cons) and
        form[0].is_a? Rouge::Symbol and
        form[0].name == :finally
       finally = form[1..-1].freeze
@@ -377,7 +377,7 @@ class << Rouge::Builtins
     catches = {}
     while body.length > 0
       form = body[-1]
-      if !form.is_a?(Rouge::Cons) or
+      if !form.is_a?(Rouge::Seq::Cons) or
          !form[0].is_a? Rouge::Symbol or
          form[0].name != :catch
         break
@@ -414,7 +414,7 @@ class << Rouge::Builtins
     return [Rouge::Symbol[:try]] unless body.length > 0
 
     form = body[-1]
-    if form.is_a?(Rouge::Cons) and
+    if form.is_a?(Rouge::Seq::Cons) and
        form[0].is_a? Rouge::Symbol and
        form[0].name == :finally
       finally = form[1..-1].freeze
@@ -424,7 +424,7 @@ class << Rouge::Builtins
     catches = []
     while body.length > 0
       form = body[-1]
-      if !form.is_a?(Rouge::Cons) or
+      if !form.is_a?(Rouge::Seq::Cons) or
          !form[0].is_a? Rouge::Symbol or
          form[0].name != :catch
         break
@@ -446,14 +446,14 @@ class << Rouge::Builtins
       end
 
       bind_lexicals = lexicals.dup << c[:bind].name
-      Rouge::Cons[Rouge::Symbol[:catch],
+      Rouge::Seq::Cons[Rouge::Symbol[:catch],
                   Rouge::Compiler.compile(ns, lexicals, c[:class]),
                   c[:bind],
                   *c[:body].map {|f|
                     Rouge::Compiler.compile(ns, bind_lexicals, f)
                   }]
     },
-    *(finally ? [Rouge::Cons[Rouge::Symbol[:finally],
+    *(finally ? [Rouge::Seq::Cons[Rouge::Symbol[:finally],
                              *finally.map {|f|
                                Rouge::Compiler.compile(ns, lexicals, f)
                              }]] : [])]

@@ -70,7 +70,7 @@ describe Rouge::Builtins do
 
       it { l.should be_an_instance_of Proc }
       it { l.call.should eq "Mystik Spiral" }
-      it { context.eval(Rouge::Cons[l]).should eq "Mystik Spiral" }
+      it { context.eval(Rouge::Seq::Cons[l]).should eq "Mystik Spiral" }
     end
 
     it "should create functions of correct arity" do
@@ -392,8 +392,8 @@ describe Rouge::Builtins do
         Rouge::Builtins._compile_defmacro(
             ns, Set.new,
             Rouge::Symbol[:barge],
-            Rouge::Cons[[Rouge::Symbol[:f]], :a1],
-            Rouge::Cons[[Rouge::Symbol[:g]], :a2])
+            Rouge::Seq::Cons[[Rouge::Symbol[:f]], :a1],
+            Rouge::Seq::Cons[[Rouge::Symbol[:g]], :a2])
       end
     end
 

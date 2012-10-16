@@ -90,26 +90,26 @@ describe Rouge::Reader do
 
   describe "lists" do
     it "should read the empty list" do
-      @ns.read("()").should eq Rouge::Cons[]
+      @ns.read("()").should eq Rouge::Seq::Cons[]
     end
 
     it "should read one-element lists" do
-      @ns.read("(tiffany)").should eq Rouge::Cons[Rouge::Symbol[:tiffany]]
+      @ns.read("(tiffany)").should eq Rouge::Seq::Cons[Rouge::Symbol[:tiffany]]
       @ns.read("(:raaaaash)").
-          should eq Rouge::Cons[:raaaaash]
+          should eq Rouge::Seq::Cons[:raaaaash]
     end
 
     it "should read multiple-element lists" do
-      @ns.read("(1 2 3)").should eq Rouge::Cons[1, 2, 3]
+      @ns.read("(1 2 3)").should eq Rouge::Seq::Cons[1, 2, 3]
       @ns.read("(true () [] \"no\")").
-          should eq Rouge::Cons[Rouge::Symbol[:true], Rouge::Cons[], [], "no"]
+          should eq Rouge::Seq::Cons[Rouge::Symbol[:true], Rouge::Seq::Cons[], [], "no"]
     end
 
     it "should read nested lists" do
       @ns.read("(((3) (())) 9 ((8) (8)))").
-          should eq Rouge::Cons[Rouge::Cons[Rouge::Cons[3],
-          Rouge::Cons[Rouge::Cons[]]], 9,
-          Rouge::Cons[Rouge::Cons[8], Rouge::Cons[8]]]
+          should eq Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Seq::Cons[3],
+          Rouge::Seq::Cons[Rouge::Seq::Cons[]]], 9,
+          Rouge::Seq::Cons[Rouge::Seq::Cons[8], Rouge::Seq::Cons[8]]]
     end
 
     it "should read lists as frozen" do
@@ -132,7 +132,7 @@ describe Rouge::Reader do
     it "should read multiple-element vectors" do
       @ns.read("[1 2 3]").should eq [1, 2, 3]
       @ns.read("[true () [] \"no\"]").
-          should eq [Rouge::Symbol[:true], Rouge::Cons[], [], "no"]
+          should eq [Rouge::Symbol[:true], Rouge::Seq::Cons[], [], "no"]
     end
 
     it "should read nested vectors" do
@@ -150,14 +150,14 @@ describe Rouge::Reader do
   describe "quotations" do
     it "should read 'X as (QUOTE X)" do
       @ns.read("'x").
-          should eq Rouge::Cons[Rouge::Symbol[:quote], Rouge::Symbol[:x]]
+          should eq Rouge::Seq::Cons[Rouge::Symbol[:quote], Rouge::Symbol[:x]]
     end
 
     it "should read ''('X) as (QUOTE (QUOTE ((QUOTE X))))" do
       @ns.read("''('x)").
-          should eq Rouge::Cons[Rouge::Symbol[:quote],
-                    Rouge::Cons[Rouge::Symbol[:quote],
-                    Rouge::Cons[Rouge::Cons[Rouge::Symbol[:quote],
+          should eq Rouge::Seq::Cons[Rouge::Symbol[:quote],
+                    Rouge::Seq::Cons[Rouge::Symbol[:quote],
+                    Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Symbol[:quote],
                                             Rouge::Symbol[:x]]]]]
     end
   end
@@ -165,14 +165,14 @@ describe Rouge::Reader do
   describe "vars" do
     it "should read #'X as (VAR X)" do
       @ns.read("#'x").
-          should eq Rouge::Cons[Rouge::Symbol[:var], Rouge::Symbol[:x]]
+          should eq Rouge::Seq::Cons[Rouge::Symbol[:var], Rouge::Symbol[:x]]
     end
 
     it "should read #'#'(#'X) as (VAR (VAR ((VAR X))))" do
       @ns.read("#'#'(#'x)").
-          should eq Rouge::Cons[Rouge::Symbol[:var],
-                    Rouge::Cons[Rouge::Symbol[:var],
-                    Rouge::Cons[Rouge::Cons[Rouge::Symbol[:var],
+          should eq Rouge::Seq::Cons[Rouge::Symbol[:var],
+                    Rouge::Seq::Cons[Rouge::Symbol[:var],
+                    Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Symbol[:var],
                                             Rouge::Symbol[:x]]]]]
     end
   end
@@ -315,7 +315,7 @@ describe Rouge::Reader do
       it "should read identically within each invocation" do
         as = @ns.read('`(a# a# `(a# a#))')
         as = as
-          .map {|e| e.respond_to?(:to_a) ? e.to_a : e}
+          .map {|e| e.respond_to?(:to_a) ? e.to_a : e}.to_a
           .flatten
           .map {|e| e.respond_to?(:to_a) ? e.to_a : e}
           .flatten

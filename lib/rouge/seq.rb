@@ -60,8 +60,8 @@ module Rouge::Seq
       cursor.first
     end
 
-    def ==(cons)
-      self.to_a == cons.to_a
+    def ==(seq)
+      seq.is_a?(ISeq) and self.to_a == seq.to_a
     end
 
     def each(&block)
@@ -110,6 +110,8 @@ module Rouge::Seq
       return self.enum_for(:each) if block.nil?
     end
   end
+
+  Empty.freeze
 
   class Cons
     include ISeq

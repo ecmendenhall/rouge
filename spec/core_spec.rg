@@ -12,7 +12,7 @@
     (is (= (list "trent") '("trent")))
     (is (= (list true) '(true))))
   (testing "n-ary list creation"
-    (is (= (apply list (range 1 51)) (.to_a (ruby/Range. 1 50))))))
+    (is (= (apply list (range 1 6)) (.to_a (ruby/Range. 1 5))))))
 
 (testing "sequential"
   (is (sequential? []))

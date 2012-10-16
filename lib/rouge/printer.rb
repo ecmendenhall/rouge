@@ -20,7 +20,7 @@ module Rouge::Printer
       out << form.inspect
     when Rouge::Seq::Empty
       out << "()"
-    when Rouge::Cons
+    when Rouge::Seq::Cons
       if form.length == 2 and form[0] == Rouge::Symbol[:quote]
         out << "'"
         print(form[1], out)

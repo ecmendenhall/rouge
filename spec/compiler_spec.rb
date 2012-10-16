@@ -49,7 +49,7 @@ describe Rouge::Compiler do
   describe "macro behaviour" do
     it "should execute macro calls when compiling" do
       @ns.set_here :thingy, Rouge::Macro[lambda {|f|
-        Rouge::Cons[Rouge::Symbol[:list], *f.to_a]
+        Rouge::Seq::Cons[Rouge::Symbol[:list], *f.to_a]
       }]
       @compile.call("(let [list 'thing] (thingy (1 2 3)))").
           should eq @read.call("(let [list 'thing] (list 1 2 3))")

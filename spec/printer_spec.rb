@@ -49,27 +49,27 @@ describe Rouge::Printer do
 
     describe "lists" do
       it "should print the empty list" do
-        Rouge.print(Rouge::Cons[], "").should eq "()"
+        Rouge.print(Rouge::Seq::Cons[], "").should eq "()"
       end
 
       it "should print one-element lists" do
-        Rouge.print(Rouge::Cons[Rouge::Symbol[:tiffany]], "").
+        Rouge.print(Rouge::Seq::Cons[Rouge::Symbol[:tiffany]], "").
             should eq "(tiffany)"
-        Rouge.print(Rouge::Cons[:raaaaash], "").
+        Rouge.print(Rouge::Seq::Cons[:raaaaash], "").
             should eq "(:raaaaash)"
       end
 
       it "should print multiple-element lists" do
-        Rouge.print(Rouge::Cons[1, 2, 3], "").should eq "(1 2 3)"
-        Rouge.print(Rouge::Cons[Rouge::Symbol[:true],
-                                Rouge::Cons[], [], "no"], "").
+        Rouge.print(Rouge::Seq::Cons[1, 2, 3], "").should eq "(1 2 3)"
+        Rouge.print(Rouge::Seq::Cons[Rouge::Symbol[:true],
+                                Rouge::Seq::Cons[], [], "no"], "").
             should eq "(true () [] \"no\")"
       end
 
       it "should print nested lists" do
-        Rouge.print(Rouge::Cons[Rouge::Cons[Rouge::Cons[3],
-                    Rouge::Cons[Rouge::Cons[]]], 9,
-                    Rouge::Cons[Rouge::Cons[8], Rouge::Cons[8]]], "").
+        Rouge.print(Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Seq::Cons[3],
+                    Rouge::Seq::Cons[Rouge::Seq::Cons[]]], 9,
+                    Rouge::Seq::Cons[Rouge::Seq::Cons[8], Rouge::Seq::Cons[8]]], "").
             should eq "(((3) (())) 9 ((8) (8)))"
       end
     end
@@ -86,7 +86,7 @@ describe Rouge::Printer do
 
       it "should print multiple-element vectors" do
         Rouge.print([1, 2, 3], "").should eq "[1 2 3]"
-        Rouge.print([Rouge::Symbol[:true], Rouge::Cons[], [], "no"], "").
+        Rouge.print([Rouge::Symbol[:true], Rouge::Seq::Cons[], [], "no"], "").
             should eq "[true () [] \"no\"]"
       end
 
@@ -98,14 +98,14 @@ describe Rouge::Printer do
 
     describe "quotations" do
       it "should print (QUOTE X) as 'X" do
-        Rouge.print(Rouge::Cons[Rouge::Symbol[:quote], Rouge::Symbol[:x]], "").
+        Rouge.print(Rouge::Seq::Cons[Rouge::Symbol[:quote], Rouge::Symbol[:x]], "").
             should eq "'x"
       end
 
       it "should print (QUOTE (QUOTE ((QUOTE X)))) as ''('X)" do
-        Rouge.print(Rouge::Cons[Rouge::Symbol[:quote],
-                    Rouge::Cons[Rouge::Symbol[:quote],
-                    Rouge::Cons[Rouge::Cons[Rouge::Symbol[:quote],
+        Rouge.print(Rouge::Seq::Cons[Rouge::Symbol[:quote],
+                    Rouge::Seq::Cons[Rouge::Symbol[:quote],
+                    Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Symbol[:quote],
                     Rouge::Symbol[:x]]]]], "").
             should eq "''('x)"
       end
@@ -113,15 +113,15 @@ describe Rouge::Printer do
 
     describe "vars" do
       it "should print (VAR X/Y) as #'X/Y" do
-        Rouge.print(Rouge::Cons[Rouge::Symbol[:var],
+        Rouge.print(Rouge::Seq::Cons[Rouge::Symbol[:var],
                                 Rouge::Symbol[:"x/y"]], "").
             should eq "#'x/y"
       end
 
       it "should print (VAR (VAR ((VAR X/Y)))) as #'#'(#'X/Y)" do
-        Rouge.print(Rouge::Cons[Rouge::Symbol[:var],
-                    Rouge::Cons[Rouge::Symbol[:var],
-                    Rouge::Cons[Rouge::Cons[Rouge::Symbol[:var],
+        Rouge.print(Rouge::Seq::Cons[Rouge::Symbol[:var],
+                    Rouge::Seq::Cons[Rouge::Symbol[:var],
+                    Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Symbol[:var],
                     Rouge::Symbol[:"x/y"]]]]], "").
             should eq "#'#'(#'x/y)"
       end
