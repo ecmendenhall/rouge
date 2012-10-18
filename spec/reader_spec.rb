@@ -315,12 +315,9 @@ describe Rouge::Reader do
       it "should read identically within each invocation" do
         as = @ns.read('`(a# a# `(a# a#))')
         as = as
-          .map {|e| e.respond_to?(:to_a) ? e.to_a : e}.to_a
-          .flatten
-          .map {|e| e.respond_to?(:to_a) ? e.to_a : e}
-          .flatten
-          .map {|e| e.respond_to?(:to_a) ? e.to_a : e}
-          .flatten
+          .map {|e| e.respond_to?(:to_a) ? e.to_a : e}.to_a.flatten
+          .flat_map {|e| e.respond_to?(:to_a) ? e.to_a : e}
+          .flat_map {|e| e.respond_to?(:to_a) ? e.to_a : e}
           .find_all {|e|
             e.is_a?(Rouge::Symbol) and e.name.to_s =~ /^a/
           }

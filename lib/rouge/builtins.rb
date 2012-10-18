@@ -22,7 +22,7 @@ class << Rouge::Builtins
   def _compile_let(ns, lexicals, bindings, *body)
     lexicals = lexicals.dup
 
-    bindings = bindings.to_a.each_slice(2).map do |k, v|
+    bindings = bindings.to_a.each_slice(2).flat_map do |k, v|
       if k.ns
         raise Rouge::Context::BadBindingError,
             "cannot LET qualified name"
@@ -30,7 +30,7 @@ class << Rouge::Builtins
       v = Rouge::Compiler.compile(ns, lexicals, v)
       lexicals << k.name
       [k, v]
-    end.flatten(1)
+    end
     [Rouge::Symbol[:let],
      bindings,
      *Rouge::Compiler.compile(ns, lexicals, body)]

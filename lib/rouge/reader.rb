@@ -216,7 +216,7 @@ class Rouge::Reader
         r
       end
     when Hash
-      Hash[*form.map {|k,v| [dequote(k), dequote(v)]}.flatten(1)]
+      Hash[form.map {|k,v| [dequote(k), dequote(v)]}]
     when Rouge::Dequote
       form.inner
     when Rouge::Symbol

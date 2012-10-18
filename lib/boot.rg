@@ -136,13 +136,13 @@
   (.[] (seq coll) index))
 
 (defn first [coll]
-  (.head (seq coll)))
+  (.first (seq coll)))
 
 (defn rest [coll]
-  (.tail (seq coll)))
+  (.more (seq coll)))
 
 (defn next [coll]
-  (seq (rest coll)))
+  (.next (seq coll)))
 
 (defn second [coll]
   (first (next coll)))
