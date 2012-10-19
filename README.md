@@ -4,8 +4,6 @@ Ruby + Clojure = Rouge.
 
 ## why?
 
-In no particular order:
-
 * Ruby's gems are fun to use.
 * Quick boot time (currently around 0.1s).
 * Clojure is awesome.
@@ -73,12 +71,17 @@ What about in Rails?
     [#<Content id: 1, content_group_id: 1, name: "welcome", content: "blah blah", created_at: "2012-08-26 11:30:50", updated_at: "2012-08-26 11:50:27", order: nil>]
     user=>
 
+## discuss
+
+* [rouge-talk mailing list](https://groups.google.com/forum/#!forum/rouge-talk) (email <rouge-talk@googlegroups.com>) for announcements and chat
+* I hang out on `#rouge` on Freenode.
+
 ## TODO
 
 See [TODO](https://github.com/unnali/rouge/blob/master/TODO), but big ones
 include:
 
-* seqs
+* seqs ([in progress](https://github.com/unnali/rouge/pull/3))
 * persistent datastructures everywhere
 * defprotocol
 
@@ -95,7 +98,7 @@ Note that I've yet to work out copyright or license (will ask on
 
 ## authorship
 
-Original author: Arlen Cuss &mdash; [ar@len.me](mailto:ar@len.me).
+Original author: Arlen Christian Mart Cuss &mdash; [ar@len.me](mailto:ar@len.me).
 
 Inspiration: 100% [Clojure](https://github.com/clojure/clojure).  Thanks be to
 Rich Hickey.
