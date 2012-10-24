@@ -9,6 +9,7 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{An implementation of Clojure for Ruby.}
   gem.homepage      = "http://rouge.io/"
 
+  gem.add_development_dependency('rake')
   gem.add_development_dependency('autotest')
   gem.add_development_dependency('autotest-growl')
   gem.add_development_dependency('autotest-fsevent')
