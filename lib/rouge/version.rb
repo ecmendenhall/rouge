@@ -1,6 +1,7 @@
 # encoding: utf-8
 
-source 'https://rubygems.org'
-gemspec
+module Rouge
+  VERSION = "0.0.1"
+end
 
 # vim: set sw=2 et cc=80:
