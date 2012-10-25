@@ -33,7 +33,7 @@ class Rouge::Reader
         dispatch
       when SYMBOL
         # SYMBOL after \[ and #, because it includes both
-        symbol
+        symbol_or_negative_number
       when /{/
         map
       when /'/
@@ -129,8 +129,13 @@ class Rouge::Reader
     r.freeze
   end
 
-  def symbol
-    Rouge::Symbol[slurp(SYMBOL).intern]
+  def symbol_or_negative_number
+    s = slurp(SYMBOL)
+    if s[0] == ?- and s[1..-1] =~ NUMBER
+      -s[1..-1].gsub(/\D+/, '').to_i
+    else
+      Rouge::Symbol[s.intern]
+    end
   end
 
   def map

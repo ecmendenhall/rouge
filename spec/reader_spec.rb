@@ -9,13 +9,9 @@ describe Rouge::Reader do
   end
 
   describe "reading numbers" do
-    it "should read plain numbers" do
-      @ns.read("12755").should eq 12755
-    end
-
-    it "should read separated numbers" do
-      @ns.read("2_50_9").should eq 2509
-    end
+    it { @ns.read("12755").should eq 12755 }
+    it { @ns.read("2_50_9").should eq 2509 }
+    it { @ns.read("-999").should eq(-999) }
   end
 
   it "should read symbols" do
