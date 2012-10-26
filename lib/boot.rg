@@ -4,22 +4,23 @@
       :author "Arlen Christian Mart Cuss"}
   rouge.core)
 
-(def seq (fn [coll]
+(def seq (fn rouge.core/seq [coll]
            ; XXX right now this just coerces to a Cons
            (let [s (apply .[] ruby/Rouge.Cons (.to_a coll))]
              (if (.== s ruby/Rouge.Cons.Empty)
                nil
                s))))
 
-(def concat (fn [& lists]
+(def concat (fn rouge.core/concat [& lists]
               ; XXX lazy seq
               (seq (.inject (.map lists | .to_a) | .+))))
 
-(def list (fn [& elements]
+(def list (fn rouge.core/list [& elements]
             elements))
 
 (defmacro defn [name args & body]
-  `(def ~name (fn ~args ~@body)))
+  (let [fn-name (.intern (.join [(.name (.ns (context))) (.name name)] "/"))]
+    `(def ~name (fn ~(ruby/Rouge.Symbol. fn-name) ~args ~@body))))
 
 (defmacro when [cond & body]
   `(if ~cond

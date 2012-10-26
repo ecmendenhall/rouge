@@ -3,33 +3,32 @@ require 'spec_helper'
 require 'rouge'
 
 describe Rouge::Symbol do
-  describe "the lookup" do
-    it "should return true, false and nil" do
-      Rouge::Symbol[:true].should be true
-      Rouge::Symbol[:false].should be false
-      Rouge::Symbol[:nil].should be nil
-    end
+  describe "lookup" do
+    it { Rouge::Symbol[:true].should be true }
+    it { Rouge::Symbol[:false].should be false }
+    it { Rouge::Symbol[:nil].should be nil }
   end
 
-  describe "the constructor" do
-    it "should return new objects every time" do
-      Rouge::Symbol[:a].should_not be Rouge::Symbol[:a]
-      # but:
-      Rouge::Symbol[:a].should eq Rouge::Symbol[:a]
-    end
+  describe ".[]" do
+    it { Rouge::Symbol[:a].should_not be Rouge::Symbol[:a] }
+    # but:
+    it { Rouge::Symbol[:a].should eq Rouge::Symbol[:a] }
   end
 
-  describe "the name and ns methods" do
-    it "should return the parts of the symbol" do
-      Rouge::Symbol[:abc].ns.should be_nil
-      Rouge::Symbol[:abc].name.should eq :abc
-      Rouge::Symbol[:"abc/def"].ns.should eq :abc
-      Rouge::Symbol[:"abc/def"].name.should eq :def
-      Rouge::Symbol[:/].ns.should be_nil
-      Rouge::Symbol[:/].name.should eq :/
-      Rouge::Symbol[:"rouge.core//"].ns.should eq :"rouge.core"
-      Rouge::Symbol[:"rouge.core//"].name.should eq :/
-    end
+  describe "#ns, #name" do
+    it { Rouge::Symbol[:abc].ns.should be_nil }
+    it { Rouge::Symbol[:abc].name.should eq :abc }
+    it { Rouge::Symbol[:"abc/def"].ns.should eq :abc }
+    it { Rouge::Symbol[:"abc/def"].name.should eq :def }
+    it { Rouge::Symbol[:/].ns.should be_nil }
+    it { Rouge::Symbol[:/].name.should eq :/ }
+    it { Rouge::Symbol[:"rouge.core//"].ns.should eq :"rouge.core" }
+    it { Rouge::Symbol[:"rouge.core//"].name.should eq :/ }
+  end
+
+  describe "#to_sym" do
+    it { Rouge::Symbol[:boo].to_sym.should eq :boo }
+    it { Rouge::Symbol[:"what/nice"].to_sym.should eq :"what/nice" }
   end
 end
 

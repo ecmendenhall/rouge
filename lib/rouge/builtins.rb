@@ -50,7 +50,7 @@ class << Rouge::Builtins
 
   def fn(context, *args)
     if args[0].is_a? Rouge::Symbol
-      name = args.shift.name
+      name = args.shift.to_sym
     end
 
     argv, *body = args
@@ -102,7 +102,7 @@ class << Rouge::Builtins
     }
 
     if name
-      fn.define_singleton_method(:name) { name }
+      fn.define_singleton_method(:to_s) { name }
     end
 
     fn
@@ -295,6 +295,8 @@ class << Rouge::Builtins
     else
       raise ArgumentError, "neither single-form defmacro nor multi-form"
     end
+
+    macro.define_singleton_method(:to_s) { :"#{context.ns.name}/#{name.name}" }
 
     context.ns.set_here name.name, macro
   end

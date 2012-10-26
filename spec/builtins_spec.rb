@@ -119,7 +119,7 @@ describe Rouge::Builtins do
     describe "storing its own name" do
       let(:fn) { context.readeval('(fn lmnop [])') }
       
-      it { fn.name.should eq :lmnop }
+      it { fn.to_s.should eq :lmnop }
     end
 
     it "should compile with names bound" do
@@ -383,6 +383,12 @@ describe Rouge::Builtins do
             Rouge::Cons[[Rouge::Symbol[:f]], :a1],
             Rouge::Cons[[Rouge::Symbol[:g]], :a2])
       end
+    end
+
+    describe "storing its own name" do
+      before { context.readeval('(defmacro lmnop [])') }
+
+      it { context[:lmnop].deref.to_s.should eq :"user.spec/lmnop" }
     end
   end
 
