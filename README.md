@@ -93,17 +93,35 @@ include:
 * Do your tests, do your thing.
 * Pull request!
 
-Note that I've yet to work out copyright or license (will ask on
-`clojure-dev`), but promise that they won't be anything stupid.
-
 ## authorship
 
-Original author: Arlen Christian Mart Cuss &mdash; [ar@len.me](mailto:ar@len.me).
+Original author: [Arlen Christian Mart Cuss](https://github.com/unnali).
 
-Inspiration: 100% [Clojure](https://github.com/clojure/clojure).  Thanks be to
-Rich Hickey.
+Unreserved thanks to the following people for their contributions.
+
+* [Russell Whitaker](https://github.com/russellwhitaker)
+* [Misha Moroshko](https://github.com/moroshko)
 
 ## copyright and licensing
 
-Yet to be determined; likely EPL due to the entire concept and some code taken
-direct from Clojure.
+The [MIT license](http://opensource.org/licenses/MIT).
+
+Copyright &copy; 2012 Arlen Christian Mart Cuss
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
