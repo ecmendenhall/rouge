@@ -26,9 +26,9 @@ describe Rouge::Symbol do
     it { Rouge::Symbol[:"rouge.core//"].name.should eq :/ }
   end
 
-  describe "#nice_name" do
-    it { Rouge::Symbol[:boo].nice_name.should eq :boo }
-    it { Rouge::Symbol[:"what/nice"].nice_name.should eq :"what/nice" }
+  describe "#to_sym" do
+    it { Rouge::Symbol[:boo].to_sym.should eq :boo }
+    it { Rouge::Symbol[:"what/nice"].to_sym.should eq :"what/nice" }
   end
 end
 

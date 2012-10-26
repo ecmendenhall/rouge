@@ -384,6 +384,12 @@ describe Rouge::Builtins do
             Rouge::Cons[[Rouge::Symbol[:g]], :a2])
       end
     end
+
+    describe "storing its own name" do
+      before { context.readeval('(defmacro lmnop [])') }
+
+      it { context[:lmnop].deref.to_s.should eq :"user.spec/lmnop" }
+    end
   end
 
   describe "apply" do
