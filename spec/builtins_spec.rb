@@ -138,6 +138,18 @@ describe Rouge::Builtins do
            Rouge::Symbol[:block]],
           :xyzzy)
     end
+
+    it "should use a new context per invocation" do
+      context.readeval(<<-ROUGE).should eq :a
+        (let [f (fn [x]
+                  (if (.== x :a)
+                    (do
+                      (f :b)
+                      x)
+                    nil))]
+          (f :a))
+      ROUGE
+    end
   end
 
   describe "def" do

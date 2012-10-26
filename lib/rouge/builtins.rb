@@ -55,8 +55,6 @@ class << Rouge::Builtins
 
     argv, *body = args
 
-    context = Rouge::Context.new(context)
-
     if argv[-2] == Rouge::Symbol[:&]
       rest = argv[-1]
       argv = argv[0...-2]
@@ -86,6 +84,8 @@ class << Rouge::Builtins
           raise e
         end
       end
+
+      context = Rouge::Context.new(context)
 
       argv.each.with_index do |arg, i|
         context.set_here(arg.name, args[i])
