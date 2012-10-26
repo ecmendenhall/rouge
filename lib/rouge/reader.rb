@@ -33,7 +33,7 @@ class Rouge::Reader
         dispatch
       when SYMBOL
         # SYMBOL after \[ and #, because it includes both
-        symbol_or_negative_number
+        symbol_or_number
       when /{/
         map
       when /'/
@@ -129,9 +129,9 @@ class Rouge::Reader
     r.freeze
   end
 
-  def symbol_or_negative_number
+  def symbol_or_number
     s = slurp(SYMBOL)
-    if s[0] == ?- and s[1..-1] =~ NUMBER
+    if (s[0] == ?- or s[0] == ?+) and s[1..-1] =~ NUMBER
       read_number(s)
     else
       Rouge::Symbol[s.intern]
@@ -355,7 +355,7 @@ class Rouge::Reader
   end
 
   def reader_raise ex, m
-    around = 
+    around =
         "#{@src[[@n - 3, 0].max...[@n, 0].max]}" +
         "#{@src[@n]}" +
         "#{(@src[@n + 1..@n + 3] || "").gsub(/\n.*$/, '')}"
@@ -363,18 +363,20 @@ class Rouge::Reader
     line = @src[0...@n].count("\n") + 1
     char = @src[0...@n].reverse.index("\n") || 0 + 1
 
-    raise ex, 
+    raise ex,
         "around: #{around}\n" +
         "           ^\n" +
         "line #{line} char #{char}: #{m}"
   end
 
   def read_number s
+    neg = 1
+
     if s[0] == ?-
       neg = -1
       s = s[1..-1]
-    else
-      neg = 1
+    elsif s[0] == ?+
+      s = s[1..-1]
     end
 
     n = s.gsub(/[^0-9.]+/, '')
