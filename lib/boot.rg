@@ -126,7 +126,7 @@
   (or (= (class object) ruby/Rouge.Cons)
       (= object ruby/Rouge.Cons.Empty)))
 
-(def *ns* 'user)
+(def *ns* 'user) ; XXX what
 
 (defn ns-publics [ns]
   )
@@ -209,17 +209,6 @@
 (defn get [map key] ; and [map key not-found]
   (.[] map key))
 
-(defmacro if-let
-  ([bindings then]
-   `(if-let ~bindings ~then nil))
-  ([bindings then else]
-   (let [form (bindings 0) tst (bindings 1)]
-     `(let [temp# ~tst]
-        (if temp#
-          (let [~form temp#]
-            ~then)
-          ~else)))))
-
 (defn meta [x]
   ; TODO
   nil)
@@ -227,19 +216,6 @@
 (defn with-meta [x m]
   ; TODO
   x)
-
-(defmacro ->
-  ([x] x)
-  ([x form] (if (seq? form)
-              (with-meta `(~(first form) ~x ~@(next form)) (meta form))
-              (list form x)))
-  ([x form & more] `(-> (-> ~x ~form) ~@more)))
-
-(defmacro ->>
-  ([x form] (if (seq? form)
-              (with-meta `(~(first form) ~@(next form)  ~x) (meta form))
-              (list form x)))
-  ([x form & more] `(->> (->> ~x ~form) ~@more)))
 
 (defmacro .
   [recv method & args]
@@ -273,12 +249,13 @@
         (puts "FAIL in ???")
         (puts "expected: " ~(pr-str check))
         (let [actual#
-                (if-let [error# (get result# :error)]
-                  error#
-                  (if (and (seq? '~check)
-                           (= 'not (first '~check)))
-                    (second '~check)
-                    `(not ~'~check)))]
+                (let [error# (get result# :error)]
+                  (if error#
+                    error#
+                    (if (and (seq? '~check)
+                             (= 'not (first '~check)))
+                      (second '~check)
+                      `(not ~'~check))))]
           (puts "  actual: " (pr-str actual#))))
       (do
         (swap! *tests-passed* inc)
