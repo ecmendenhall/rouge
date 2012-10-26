@@ -12,12 +12,14 @@ describe Rouge::Reader do
     it { @ns.read("12755").should eq 12755 }
     it { @ns.read("2_50_9").should eq 2509 }
     it { @ns.read("-999").should eq(-999) }
+    it { @ns.read("+1704").should eq(1704) }
 
     context "floats" do
       it { @ns.read("23.0").should be_an_instance_of Float }
       it { @ns.read("23.0").should eq 23.0 }
       it { @ns.read("23.1").should eq 23.1 }
       it { @ns.read("-23.1").should eq(-23.1) }
+      it { @ns.read("+17.04").should eq(17.04) }
     end
   end
 
@@ -104,7 +106,7 @@ describe Rouge::Reader do
           Rouge::Cons[Rouge::Cons[]]], 9,
           Rouge::Cons[Rouge::Cons[8], Rouge::Cons[8]]]
     end
-    
+
     it "should read lists as frozen" do
       @ns.read("()").should be_frozen
       @ns.read("(1)").should be_frozen
