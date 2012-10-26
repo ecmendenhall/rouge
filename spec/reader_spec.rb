@@ -12,6 +12,13 @@ describe Rouge::Reader do
     it { @ns.read("12755").should eq 12755 }
     it { @ns.read("2_50_9").should eq 2509 }
     it { @ns.read("-999").should eq(-999) }
+
+    context "floats" do
+      it { @ns.read("23.0").should be_an_instance_of Float }
+      it { @ns.read("23.0").should eq 23.0 }
+      it { @ns.read("23.1").should eq 23.1 }
+      it { @ns.read("-23.1").should eq(-23.1) }
+    end
   end
 
   it "should read symbols" do

@@ -58,7 +58,7 @@ class Rouge::Reader
   private
 
   def number
-    slurp(NUMBER).gsub(/\D+/, '').to_i
+    read_number(slurp(NUMBER))
   end
 
   def keyword
@@ -132,7 +132,7 @@ class Rouge::Reader
   def symbol_or_negative_number
     s = slurp(SYMBOL)
     if s[0] == ?- and s[1..-1] =~ NUMBER
-      -s[1..-1].gsub(/\D+/, '').to_i
+      read_number(s)
     else
       Rouge::Symbol[s.intern]
     end
@@ -369,7 +369,23 @@ class Rouge::Reader
         "line #{line} char #{char}: #{m}"
   end
 
-  NUMBER = /^[0-9][0-9_]*/
+  def read_number s
+    if s[0] == ?-
+      neg = -1
+      s = s[1..-1]
+    else
+      neg = 1
+    end
+
+    n = s.gsub(/[^0-9.]+/, '')
+    if n[/\./]
+      neg * n.to_f
+    else
+      neg * n.to_i
+    end
+  end
+
+  NUMBER = /^[0-9][0-9_.]*/
   SYMBOL = /^(\.\[\])|([a-zA-Z0-9\-_!&\?\*\/\.\+\|=%$<>#]+)/
 end
 
