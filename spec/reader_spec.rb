@@ -193,7 +193,7 @@ describe Rouge::Reader do
       @ns.read("{{9 7} 5}").should eq({{9 => 7} => 5})
     end
 
-    it "should read maps as nested" do
+    it "should read maps as frozen" do
       @ns.read("{}").should be_frozen
       @ns.read("{:a 1}").should be_frozen
     end
