@@ -1,6 +1,5 @@
 NEXT:
 - tests for (. x y)
-- floating point numbers
 - (ruby/)Time/now ==> Time.now
 - continue decruft Context, shift tests to Compiler as appropriate; revise most
   specs.
