@@ -33,11 +33,12 @@
   (is (= 2 (nth [1 2 3] 1)))
   (is (= 3 (nth [1 2 3] 2))))
 
-#_(testing "macroexpand"
-  (is (= 6 (let [f #(* % 2)]
-             (do
-               (defmacro a [x] `(f ~x))
-               (macroexpand '(a 3)))))))
+(defmacro sample-1 [f] `(do ~f))
+(defmacro sample-2 [f] `(do ~@f ~@f))
+
+(testing "macroexpand"
+  (is (= '(do x) (macroexpand '(sample-1 x))))
+  (is (= '(do x y x y) (macroexpand '(sample-2 (x y))))))
 
 #_(testing "var passing"
   (is (= #'my-var (do
@@ -46,5 +47,19 @@
                       (take-var #'my-var))))))
 
 #_(testing "for")
+
+(testing "the -> macro"
+  (is (= 3 (macroexpand '(-> 3))))
+  (is (= '(:x 3) (macroexpand '(-> 3 :x))))
+  (is (= '(:y 3 2) (macroexpand '(-> 3 (:y 2)))))
+  (is (= '(:z (:y 3 2)) (macroexpand '(-> 3 (:y 2) :z))))
+  (is (= '(:z (:y 3 2) 8 9) (macroexpand '(-> 3 (:y 2) (:z 8 9)))))
+
+  (pending
+    ; this fails -- it compiles the inc ref.
+    (is (= '(inc 3) (macroexpand '(-> 3 inc))))
+    ; this fails too -- something weird.
+    (is (= '('inc 3) (macroexpand '(-> 3 'inc))))))
+
 
 ; vim: set ft=clojure:

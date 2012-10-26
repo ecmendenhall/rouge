@@ -2,12 +2,13 @@
 
 (ns ^{:doc "The Rouge core."
       :author "Arlen Christian Mart Cuss"}
-  rouge.core)
+  rouge.core
+  (:use ruby))
 
 (def seq (fn rouge.core/seq [coll]
            ; XXX right now this just coerces to a Cons
-           (let [s (apply .[] ruby/Rouge.Cons (.to_a coll))]
-             (if (.== s ruby/Rouge.Cons.Empty)
+           (let [s (apply .[] Rouge.Cons (.to_a coll))]
+             (if (.== s Rouge.Cons.Empty)
                nil
                s))))
 
@@ -20,7 +21,7 @@
 
 (defmacro defn [name args & body]
   (let [fn-name (.intern (.join [(.name (.ns (context))) (.name name)] "/"))]
-    `(def ~name (fn ~(ruby/Rouge.Symbol. fn-name) ~args ~@body))))
+    `(def ~name (fn ~(Rouge.Symbol. fn-name) ~args ~@body))))
 
 (defmacro when [cond & body]
   `(if ~cond
@@ -47,14 +48,14 @@
     (.join args "")))
 
 (defn pr-str [& args]
-  (let [args (map #(.print ruby/Rouge % (ruby/String.)) args)]
+  (let [args (map #(.print Rouge % (String.)) args)]
     (.join args " ")))
 
 (defn print [& args]
-  (.print ruby/Kernel (apply pr-str args)))
+  (.print Kernel (apply pr-str args)))
 
 (defn puts [& args]
-  (.print ruby/Kernel (apply str args) "\n"))
+  (.print Kernel (apply str args) "\n"))
 
 (defn count [coll]
   (.length coll))
@@ -74,9 +75,9 @@
 
 (defn sequential? [coll]
   (and
-    (or (.== (class coll) ruby/Array)
-        (.== (class coll) ruby/Rouge.Cons)
-        (.== coll ruby/Rouge.Cons.Empty))
+    (or (.== (class coll) Array)
+        (.== (class coll) Rouge.Cons)
+        (.== coll Rouge.Cons.Empty))
     true))
 
 (defn = [a b]
@@ -110,21 +111,21 @@
   (reduce ./ (concat (list a) args)))
 
 (defn require [lib]
-  (.require ruby/Kernel lib))
+  (.require Kernel lib))
 
 (defn cons [head tail]
   ; XXX lazy seq
-  (ruby/Rouge.Cons. head tail))
+  (Rouge.Cons. head tail))
 
 (defn range [from til]
   ; XXX this will blow so many stacks
   (if (= from til)
-    ruby/Rouge.Cons.Empty
+    Rouge.Cons.Empty
     (cons from (range (+ 1 from) til))))
 
 (defn seq? [object]
-  (or (= (class object) ruby/Rouge.Cons)
-      (= object ruby/Rouge.Cons.Empty)))
+  (or (= (class object) Rouge.Cons)
+      (= object Rouge.Cons.Empty)))
 
 (def *ns* 'user) ; XXX what
 
@@ -153,16 +154,16 @@
   (.< a b))
 
 (defmacro macroexpand [form]
-  `(.compile ruby/Rouge.Compiler (.ns (context)) (ruby/Set.) ~form))
+  `(.compile Rouge.Compiler (.ns (context)) (Set.) ~form))
 
 (defn push-thread-bindings [map]
-  (.push ruby/Rouge.Var map))
+  (.push Rouge.Var map))
 
 (defn pop-thread-bindings []
-  (.pop ruby/Rouge.Var))
+  (.pop Rouge.Var))
 
 (defn hash-map [& keyvals]
-  (apply .[] ruby/Hash keyvals))
+  (apply .[] Hash keyvals))
 
 (defmacro binding [bindings & body]
   (let [var-ize (fn [var-vals]
@@ -184,7 +185,7 @@
   (.deref derefable))
 
 (defn atom [initial]
-  (ruby/Rouge.Atom. initial))
+  (Rouge.Atom. initial))
 
 (defn swap! [atom f & args]
   (apply .swap! atom f args))
@@ -202,8 +203,8 @@
     (let [c (class coll)
           hd (first xs)
           tl (rest xs)]
-      (if (= c ruby/Rouge.Cons)
-        (apply conj (ruby/Rouge.Cons coll hd) tl)
+      (if (= c Rouge.Cons)
+        (apply conj (Rouge.Cons coll hd) tl)
         (apply conj (.push (.dup coll) hd) tl)))))
 
 (defn get [map key] ; and [map key not-found]
@@ -220,6 +221,19 @@
 (defmacro .
   [recv method & args]
   `(.send ~recv ~(.name method) ~@args))
+
+(defmacro ->
+  ; (-> x) => x
+  ([x] x)
+  ; (-> e (a b)) => (a e b)
+  ; (-> e a) => (a e)
+  ([x f]
+   (if (seq? f)
+     `(~(first f) ~x ~@(rest f))
+     `(~f ~x)))
+  ([x f & rest]
+   `(-> (-> ~x ~f) ~@rest)))
+
 
 (ns rouge.test
   (:use rouge.core ruby))
@@ -241,7 +255,7 @@
 (defmacro is [check]
   `(let [result# (try
                   {:error nil, :result ~check}
-                  (catch ruby/Exception e#
+                  (catch Exception e#
                     {:error e#, :result false}))]
      (if (not (get result# :result))
       (do
@@ -260,5 +274,8 @@
       (do
         (swap! *tests-passed* inc)
         true))))
+
+(defmacro pending [& body]
+  (puts "TODO rouge.test/pending"))
 
 ; vim: set ft=clojure cc=80:
