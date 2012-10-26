@@ -50,7 +50,7 @@ class << Rouge::Builtins
 
   def fn(context, *args)
     if args[0].is_a? Rouge::Symbol
-      name = args.shift.name
+      name = args.shift.nice_name
     end
 
     argv, *body = args
@@ -102,7 +102,7 @@ class << Rouge::Builtins
     }
 
     if name
-      fn.define_singleton_method(:name) { name }
+      fn.define_singleton_method(:to_s) { name }
     end
 
     fn

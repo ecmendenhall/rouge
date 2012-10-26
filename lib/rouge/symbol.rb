@@ -57,8 +57,12 @@ class Rouge::Symbol
     c
   end
 
+  def nice_name
+    :"#{@ns ? "#@ns/" : ""}#@name"
+  end
+
   def inspect
-    "Rouge::Symbol[#{:"#{@ns ? "#@ns/" : ""}#@name".inspect}]"
+    "Rouge::Symbol[#{nice_name.inspect}]"
   end
 
   def to_s; inspect; end

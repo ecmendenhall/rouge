@@ -19,7 +19,8 @@
             elements))
 
 (defmacro defn [name args & body]
-  `(def ~name (fn ~args ~@body)))
+  (let [fn-name (.intern (.join [(.name (.ns (context))) (.name name)] "/"))]
+    `(def ~name (fn ~(ruby/Rouge.Symbol. fn-name) ~args ~@body))))
 
 (defmacro when [cond & body]
   `(if ~cond

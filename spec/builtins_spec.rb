@@ -119,7 +119,7 @@ describe Rouge::Builtins do
     describe "storing its own name" do
       let(:fn) { context.readeval('(fn lmnop [])') }
       
-      it { fn.name.should eq :lmnop }
+      it { fn.to_s.should eq :lmnop }
     end
 
     it "should compile with names bound" do
