@@ -4,6 +4,11 @@ require 'readline'
 module Rouge::REPL; end
 
 class << Rouge::REPL
+  def repl_error(e)
+    STDOUT.puts "!! #{e.class}: #{e.message}"
+    STDOUT.puts "#{e.backtrace.join "\n"}"
+  end
+  
   def repl(argv)
     context = Rouge::Context.new Rouge[:user]
 
@@ -44,6 +49,8 @@ class << Rouge::REPL
       rescue Rouge::Reader::EndOfDataError
         chaining = true
         next
+      rescue Rouge::Reader::UnexpectedCharacterError => reader_err
+        repl_error reader_err
       end
 
       chaining = false
@@ -66,8 +73,7 @@ class << Rouge::REPL
         context = cce.context
         count = 0
       rescue => e
-        STDOUT.puts "!! #{e.class}: #{e.message}"
-        STDOUT.puts "#{e.backtrace.join "\n"}"
+        repl_error e
       end
     end
   end
