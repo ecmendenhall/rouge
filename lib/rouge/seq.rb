@@ -43,9 +43,7 @@ module Rouge::Seq
     end
 
     def [](i)
-      if i.is_a? Range
-        return to_a[i]
-      end
+      return to_a[i] if i.is_a? Range
 
       cursor = self
 

@@ -129,9 +129,26 @@ describe Rouge::Seq::Cons do
   end
 end
 
+describe Rouge::Seq::Array do
+  describe "#first" do
+    it { Rouge::Seq::Array.new([:a, :b, :c], 0).first.should eq :a }
+    it { Rouge::Seq::Array.new([:a, :b, :c], 1).first.should eq :b }
+    it { Rouge::Seq::Array.new([:a, :b, :c], 2).first.should eq :c }
+  end
+
+  describe "#next" do
+    subject { Rouge::Seq::Array.new([:a, :b, :c], 0).next }
+
+    it { should be_an_instance_of Rouge::Seq::Array }
+    it { should eq [:b, :c] }
+  end
+end
+
 describe Rouge::Seq do
   describe ".seq" do
-    #it { Rouge::Seq.seq(
+    let(:arrayseq) { Rouge::Seq::Array.new([:a], 0) }
+
+    it { Rouge::Seq.seq(arrayseq).should be arrayseq }
   end
 end
 
