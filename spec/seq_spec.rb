@@ -67,10 +67,14 @@ describe Rouge::Seq::ISeq do
     it { numbers[2..-1].should eq [3] }
   end
 
+  describe "#==" do
+    it { Rouge::Seq::Array.new([:q], 0).should eq seq }
+    it { Rouge::Seq::Array.new([:q, :r], 0).
+             should eq Rouge::Seq::Cons[:q, :r] }
+  end
+
   describe "#each" do
-    it "should return an enumerator without a block" do
-      Rouge::Seq::Cons[1].each.should be_an_instance_of Enumerator
-    end
+    it { Rouge::Seq::Cons[1].each.should be_an_instance_of Enumerator }
   end
 end
 
