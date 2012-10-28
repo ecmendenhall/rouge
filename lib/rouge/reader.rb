@@ -370,6 +370,10 @@ class Rouge::Reader
   end
 
   def read_number s
+    if s.count('.') > 1
+      reader_raise UnexpectedCharacterError, "#{s} in #read_number"
+    end
+
     neg = 1
 
     if s[0] == ?-

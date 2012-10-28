@@ -21,6 +21,11 @@ describe Rouge::Reader do
       it { @ns.read("-23.1").should eq(-23.1) }
       it { @ns.read("+17.04").should eq(17.04) }
     end
+
+    it "should fail on invalid numbers" do
+      lambda { @ns.read("1.2.3") }.should raise_exception(Rouge::Reader::UnexpectedCharacterError)
+      lambda { @ns.read("12..") }.should raise_exception(Rouge::Reader::UnexpectedCharacterError)
+    end
   end
 
   it "should read symbols" do
