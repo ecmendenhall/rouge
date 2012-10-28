@@ -59,7 +59,8 @@ module Rouge::Seq
     end
 
     def ==(seq)
-      seq.is_a?(ISeq) and self.to_a == seq.to_a
+      (seq.is_a?(ISeq) and self.to_a == seq.to_a) or
+        (seq.is_a?(::Array) and self.to_a == seq)
     end
 
     def each(&block)
@@ -144,6 +145,16 @@ module Rouge::Seq
 
     def initialize(array, i)
       @array, @i = array, i
+    end
+
+    def first
+      @array[@i]
+    end
+
+    def next
+      if @i + 1 < @array.length
+        Array.new(@array, @i + 1)
+      end
     end
   end
 
