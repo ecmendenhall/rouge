@@ -116,7 +116,7 @@ describe Rouge::Namespace do
   describe "the read method" do
     it "should read input in this namespace" do
       Rouge::Namespace[:xyz].read("`ham").
-          should eq Rouge::Cons[Rouge::Symbol[:quote],
+          should eq Rouge::Seq::Cons[Rouge::Symbol[:quote],
                                 Rouge::Symbol[:"xyz/ham"]]
     end
   end

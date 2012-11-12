@@ -101,7 +101,7 @@ class Rouge::Context
       end
     when Rouge::Symbol
       eval_symbol form
-    when Rouge::Cons
+    when Rouge::Seq::Cons
       eval_cons form
     when Hash
       Hash[form.map {|k,v| [eval(k), eval(v)]}].freeze
@@ -166,7 +166,7 @@ class Rouge::Context
           block = eval args[index + 1]
         else
           # Inline block.
-          block = eval(Rouge::Cons[Rouge::Symbol[:fn],
+          block = eval(Rouge::Seq::Cons[Rouge::Symbol[:fn],
                                    args[index + 1],
                                    *args[index + 2..-1]])
         end

@@ -50,7 +50,7 @@ describe Rouge::Metadata do
       }.should raise_exception(Rouge::Metadata::InvalidMetadataError)
 
       lambda {
-        @class.new.meta = Rouge::Cons["what"]
+        @class.new.meta = Rouge::Seq::Cons["what"]
       }.should raise_exception(Rouge::Metadata::InvalidMetadataError)
     end
   end

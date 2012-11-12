@@ -26,7 +26,7 @@ class Rouge::Reader
       when /"/
         string
       when /\(/
-        Rouge::Cons[*list(')')]
+        Rouge::Seq::Cons[*list(')')]
       when /\[/
         list ']'
       when /#/
@@ -157,7 +157,7 @@ class Rouge::Reader
 
   def quotation
     consume
-    Rouge::Cons[Rouge::Symbol[:quote], lex]
+    Rouge::Seq::Cons[Rouge::Symbol[:quote], lex]
   end
 
   def syntaxquotation
@@ -180,13 +180,13 @@ class Rouge::Reader
 
   def dequote form
     case form
-    when Rouge::Cons, Array
+    when Rouge::Seq::Cons, Array
       rest = []
       group = []
       form.each do |f|
         if f.is_a? Rouge::Splice
           if group.length > 0
-            rest << Rouge::Cons[Rouge::Symbol[:list], *group]
+            rest << Rouge::Seq::Cons[Rouge::Symbol[:list], *group]
             group = []
           end
           rest << f.inner
@@ -196,52 +196,52 @@ class Rouge::Reader
       end
 
       if group.length > 0
-        rest << Rouge::Cons[Rouge::Symbol[:list], *group]
+        rest << Rouge::Seq::Cons[Rouge::Symbol[:list], *group]
       end
 
       r =
         if rest.length == 1
           rest[0]
         else
-          Rouge::Cons[Rouge::Symbol[:concat], *rest]
+          Rouge::Seq::Cons[Rouge::Symbol[:concat], *rest]
         end
 
       if form.is_a?(Array)
-        Rouge::Cons[Rouge::Symbol[:apply],
+        Rouge::Seq::Cons[Rouge::Symbol[:apply],
                     Rouge::Symbol[:vector],
                     r]
       elsif rest.length > 1
-        Rouge::Cons[Rouge::Symbol[:seq], r]
+        Rouge::Seq::Cons[Rouge::Symbol[:seq], r]
       else
         r
       end
     when Hash
-      Hash[*form.map {|k,v| [dequote(k), dequote(v)]}.flatten(1)]
+      Hash[form.map {|k,v| [dequote(k), dequote(v)]}]
     when Rouge::Dequote
       form.inner
     when Rouge::Symbol
       if form.ns.nil? and form.name_s =~ /(\#)$/
-        Rouge::Cons[
+        Rouge::Seq::Cons[
             Rouge::Symbol[:quote],
             Rouge::Symbol[
                 ("#{form.name.to_s.gsub(/(\#)$/, '')}__" \
                  "#{@gensyms[0]}__auto__").intern]]
       elsif form.ns or form.name_s =~ /^\./ or %w(& |).include? form.name_s
-        Rouge::Cons[Rouge::Symbol[:quote], form]
+        Rouge::Seq::Cons[Rouge::Symbol[:quote], form]
       elsif form.ns.nil?
         begin
           var = @ns[form.name]
-          Rouge::Cons[Rouge::Symbol[:quote],
+          Rouge::Seq::Cons[Rouge::Symbol[:quote],
                       Rouge::Symbol[var.name]]
         rescue Rouge::Namespace::VarNotFoundError
-          Rouge::Cons[Rouge::Symbol[:quote],
+          Rouge::Seq::Cons[Rouge::Symbol[:quote],
                       Rouge::Symbol[:"#{@ns.name}/#{form.name}"]]
         end
       else
         raise "impossible, right?" # XXX: be bothered to ensure this is so
       end
     else
-      Rouge::Cons[Rouge::Symbol[:quote], form]
+      Rouge::Seq::Cons[Rouge::Symbol[:quote], form]
     end
   end
 
@@ -250,13 +250,13 @@ class Rouge::Reader
     case peek
     when '('
       body, count = dispatch_rewrite_fn(lex, 0)
-      Rouge::Cons[
+      Rouge::Seq::Cons[
           Rouge::Symbol[:fn],
           (1..count).map {|n| Rouge::Symbol[:"%#{n}"]}.freeze,
           body]
     when "'"
       consume
-      Rouge::Cons[Rouge::Symbol[:var], lex]
+      Rouge::Seq::Cons[Rouge::Symbol[:var], lex]
     when "_"
       consume
       lex
@@ -268,14 +268,14 @@ class Rouge::Reader
 
   def dispatch_rewrite_fn form, count
     case form
-    when Rouge::Cons, Array
+    when Rouge::Seq::Cons, Array
       mapped = form.map do |e|
         e, count = dispatch_rewrite_fn(e, count)
         e
       end.freeze
 
-      if form.is_a?(Rouge::Cons)
-        [Rouge::Cons[*mapped], count]
+      if form.is_a?(Rouge::Seq::Cons)
+        [Rouge::Seq::Cons[*mapped], count]
       else
         [mapped, count]
       end
@@ -324,7 +324,7 @@ class Rouge::Reader
 
   def deref
     consume
-    Rouge::Cons[Rouge::Symbol[:"rouge.core/deref"], lex]
+    Rouge::Seq::Cons[Rouge::Symbol[:"rouge.core/deref"], lex]
   end
 
   def slurp re

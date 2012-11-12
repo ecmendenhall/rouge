@@ -44,13 +44,13 @@ module Rouge::Compiler
 
         Resolved.new resolved
       end
-    when Rouge::Cons
+    when Rouge::Seq::Cons
       head, *tail = form.to_a
 
       if head.is_a?(Rouge::Symbol) and
          (head.ns.nil? or head.ns == :"rouge.builtin") and
          Rouge::Builtins.respond_to?("_compile_#{head.name}")
-        Rouge::Cons[*
+        Rouge::Seq::Cons[*
           Rouge::Builtins.send(
             "_compile_#{head.name}",
             ns, lexicals, *tail)]
@@ -74,14 +74,14 @@ module Rouge::Compiler
               # Inline block.
               block = compile(
                 ns, lexicals,
-                Rouge::Cons[Rouge::Symbol[:fn],
+                Rouge::Seq::Cons[Rouge::Symbol[:fn],
                             *tail[index + 1..-1]])
             end
             tail = tail[0...index]
           else
             block = nil
           end
-          Rouge::Cons[
+          Rouge::Seq::Cons[
             head,
             *tail.map {|f| compile(ns, lexicals, f)},
             *(block ? [Rouge::Symbol[:|],

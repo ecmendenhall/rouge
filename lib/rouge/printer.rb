@@ -18,9 +18,16 @@ module Rouge::Printer
       out << form.inspect
     when String
       out << form.inspect
-    when Rouge::Cons::Empty
+    when Array
+      out << "["
+      form.each.with_index do |e, i|
+        out << " " unless i.zero?
+        print(e, out)
+      end
+      out << "]"
+    when Rouge::Seq::Empty
       out << "()"
-    when Rouge::Cons
+    when Rouge::Seq::Cons
       if form.length == 2 and form[0] == Rouge::Symbol[:quote]
         out << "'"
         print(form[1], out)
@@ -29,20 +36,12 @@ module Rouge::Printer
         print(form[1], out)
       else
         out << "("
-        len = form.length
         form.each.with_index do |e, i|
           out << " " unless i.zero?
           print(e, out)
         end
         out << ")"
       end
-    when Array
-      out << "["
-      form.each.with_index do |e, i|
-        out << " " unless i.zero?
-        print(e, out)
-      end
-      out << "]"
     when Rouge::Var
       out << "#'#{form.ns}/#{form.name}"
     when Hash

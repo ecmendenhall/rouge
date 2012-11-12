@@ -84,7 +84,7 @@ describe Rouge::Context do
       @a.eval([5]).should eq [5]
 
       begin
-        @a.eval(Rouge::Cons[Rouge::Symbol[:blorgh]])
+        @a.eval(Rouge::Seq::Cons[Rouge::Symbol[:blorgh]])
         raise "failed!"
       rescue Rouge::Context::BindingNotFoundError => e
         e.backtrace.any? {|line| line =~ /^\(rouge\):/}.should be_false
@@ -205,7 +205,7 @@ describe Rouge::Context do
 
     it "should evaluate macro calls" do
       macro = Rouge::Macro[lambda {|n, *body|
-        Rouge::Cons[Rouge::Symbol[:let], Rouge::Cons[n, "example"].freeze,
+        Rouge::Seq::Cons[Rouge::Symbol[:let], Rouge::Seq::Cons[n, "example"].freeze,
           *body]
       }]
 
