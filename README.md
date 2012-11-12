@@ -68,7 +68,7 @@ user=>
 See [TODO](https://github.com/unnali/rouge/blob/master/misc/TODO), but big ones
 include:
 
-* seqs ([in progress](https://github.com/unnali/rouge/pull/3))
+* making seqs nicer
 * persistent datastructures everywhere
 * defprotocol
 
