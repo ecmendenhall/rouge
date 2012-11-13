@@ -14,6 +14,16 @@
   (testing "n-ary list creation"
     (is (= (apply list (range 1 6)) (.to_a (ruby/Range. 1 5))))))
 
+(testing "or"
+  (is (let [q (atom 0)]
+        (or 1 (swap! q inc))
+        (= @q 0))))
+
+(testing "and"
+  (is (let [q (atom 0)]
+        (and nil (swap! q inc))
+        (= @q 0))))
+
 (testing "sequential"
   (is (sequential? []))
   (is (sequential? [1]))
@@ -28,6 +38,18 @@
   (is (.nil? (seq ())))
   (is (.nil? (seq nil)))
   (is (.nil? (seq []))))
+
+(testing "first"
+  (is (.nil? (first nil)))
+  (is (.nil? (first ()))))
+
+(testing "rest"
+  (is (.== (rest nil) ()))
+  (is (.== (rest ()) ())))
+
+(testing "next"
+  (is (.nil? (next nil)))
+  (is (.nil? (next ()))))
 
 (testing "nth"
   (is (= 1 (nth [1 2 3] 0)))

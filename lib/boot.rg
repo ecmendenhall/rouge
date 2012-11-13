@@ -128,14 +128,23 @@
 (defn nth [coll index]
   (.[] (seq coll) index))
 
+(defn nil? [x]
+  (.nil? x))
+
 (defn first [coll]
-  (.first (seq coll)))
+  (let [s (seq coll)]
+    (and s
+         (.first s))))
 
 (defn rest [coll]
-  (.more (seq coll)))
+  (let [s (seq coll)]
+    (and s
+         (.more s))))
 
 (defn next [coll]
-  (.next (seq coll)))
+  (let [s (seq coll)]
+    (and s
+         (.next s))))
 
 (defn second [coll]
   (first (next coll)))
