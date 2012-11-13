@@ -25,8 +25,9 @@
   (is (.== false (= () nil))))
 
 (testing "seq"
-  (is (.== (seq ()) nil))
-  (is (.== (seq nil) nil)))
+  (is (.nil? (seq ())))
+  (is (.nil? (seq nil)))
+  (is (.nil? (seq []))))
 
 (testing "nth"
   (is (= 1 (nth [1 2 3] 0)))

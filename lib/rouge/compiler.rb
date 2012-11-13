@@ -44,8 +44,18 @@ module Rouge::Compiler
 
         Resolved.new resolved
       end
-    when Rouge::Seq::Cons
-      head, *tail = form.to_a
+    when Array
+      form.map {|f| compile(ns, lexicals, f)}
+    when Hash
+      Hash[form.map {|k, v| [compile(ns, lexicals, k),
+                             compile(ns, lexicals, v)]}]
+    when Rouge::Seq::ISeq
+      to_a = form.to_a
+      if to_a.empty?
+        return Rouge::Seq::Empty
+      end
+
+      head, *tail = to_a
 
       if head.is_a?(Rouge::Symbol) and
          (head.ns.nil? or head.ns == :"rouge.builtin") and
@@ -89,11 +99,6 @@ module Rouge::Compiler
                     : [])]
         end
       end
-    when Array
-      form.map {|f| compile(ns, lexicals, f)}
-    when Hash
-      Hash[form.map {|k, v| [compile(ns, lexicals, k),
-                             compile(ns, lexicals, v)]}]
     else
       form
     end

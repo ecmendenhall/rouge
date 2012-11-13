@@ -6,11 +6,7 @@
   (:use ruby))
 
 (def seq (fn rouge.core/seq [coll]
-           ; XXX right now this just coerces to a Cons
-           (let [s (apply .[] Rouge.Seq.Cons (.to_a coll))]
-             (if (.== s Rouge.Seq.Empty)
-               nil
-               s))))
+           (.seq Rouge.Seq coll)))
 
 (def concat (fn rouge.core/concat [& lists]
               ; XXX lazy seq
@@ -74,11 +70,8 @@
   (.class object))
 
 (defn sequential? [coll]
-  (and
-    (or (.== (class coll) Array)
-        (.== (class coll) Rouge.Seq.Cons)
-        (.== coll Rouge.Seq.Empty))
-    true))
+  (or (.is_a? coll Rouge.Seq.ISeq)
+      (.is_a? coll Array)))
 
 (defn = [a b]
   (let [pre (if (and (sequential? a)

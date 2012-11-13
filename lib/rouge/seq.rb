@@ -102,6 +102,7 @@ module Rouge::Seq
     def inspect; "()"; end
     def to_s; inspect; end
 
+    def seq; nil; end
     def first; nil; end
     def next; nil; end
 
@@ -160,8 +161,16 @@ module Rouge::Seq
 
   def self.seq(form)
     case form
-    when ISeq, NilClass
+    when ISeq
+      form.seq
+    when NilClass
       form
+    when ::Array
+      if form.empty?
+        nil
+      else
+        Rouge::Seq::Array.new(form, 0)
+      end
     else
       raise "TODO; unknown seq"
     end

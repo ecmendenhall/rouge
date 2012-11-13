@@ -129,6 +129,8 @@ describe Rouge::Compiler do
       @compile.call("(let [a 'thing] (a | [b] b))").
           should eq @read.call("(let [a 'thing] (a | (fn [b] b)))")
     end
+
+    it { @compile.call("()").should eq Rouge::Seq::Empty }
   end
 end
 

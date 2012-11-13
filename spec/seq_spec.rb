@@ -150,9 +150,14 @@ end
 
 describe Rouge::Seq do
   describe ".seq" do
-    let(:arrayseq) { Rouge::Seq::Array.new([:a], 0) }
+    context Array do
+      subject { Rouge::Seq.seq([:a]) }
+      it { should be_an_instance_of Rouge::Seq::Array }
+      it { should eq Rouge::Seq::Array.new([:a], 0) }
 
-    it { Rouge::Seq.seq(arrayseq).should be arrayseq }
+      let(:arrayseq) { Rouge::Seq::Array.new([:a], 0) }
+      it { Rouge::Seq.seq(arrayseq).should be arrayseq }
+    end
   end
 end
 
