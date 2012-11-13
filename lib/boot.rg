@@ -56,15 +56,17 @@
 (defn count [coll]
   (.length coll))
 
-(defn or [& exprs]
-  ; XXX NOT SHORT CIRCUITING!
-  (.find (.to_a exprs) | [e] e))
+(defmacro or
+  ([])
+  ([x] x)
+  ([x & xs] `(let [r# ~x]
+               (if r# r# (or ~@xs)))))
 
-(defn and [& exprs]
-  ; XXX NOT SHORT CIRCUITING!
-  ; Also not Clojurish: doesn't return falsey value find.
-  (if (.all? (.to_a exprs) | [e] e)
-    (.last (.to_a exprs))))
+(defmacro and
+  ([] true)
+  ([x] x)
+  ([x & xs] `(let [r# ~x]
+               (if (not r#) r# (and ~@xs)))))
 
 (defn class [object]
   (.class object))
@@ -74,11 +76,7 @@
       (.is_a? coll Array)))
 
 (defn = [a b]
-  (let [pre (if (and (sequential? a)
-                     (sequential? b))
-              seq
-              #(do %))]
-    (.== (pre a) (pre b))))
+  (.== a b))
 
 (defn not [bool]
   (or (= bool nil)
@@ -138,8 +136,9 @@
 
 (defn rest [coll]
   (let [s (seq coll)]
-    (and s
-         (.more s))))
+    (if s
+      (.more s)
+      ())))
 
 (defn next [coll]
   (let [s (seq coll)]
