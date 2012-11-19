@@ -461,10 +461,24 @@ class << Rouge::Builtins
 
   def destructure(context, parameters, values, evalled=false, r={})
     # TODO: can probably move this elsewhere as a regular function.
-    i = 0
+
+    if parameters.is_a?(Hash) and parameters.keys == [:keys]
+      keys = parameters.values[0]
+      return Hash[context.eval(values).select do |k,v|
+        keys.include?(Rouge::Symbol[k])
+      end.map {|k,v| [Rouge::Symbol[k], v]}]
+    end
+
+    if parameters.is_a?(Hash) and
+       parameters.keys.all? {|k| k.is_a?(Rouge::Symbol)}
+      values = context.eval(values)
+      return Hash[parameters.map do |local, foreign|
+        [local, values[foreign]]
+      end]
+    end
 
     if !parameters.is_a?(Array) and !evalled
-      return {parameters => context.eval(values)}
+      raise ArgumentError, "unknown destructure parameter list"
     end
     
     unless evalled
@@ -486,13 +500,15 @@ class << Rouge::Builtins
     else
       values = values.dup
     end
-    
+
+    original_values = values.dup
+
     parameters = parameters.dup
     while parameters.length > 0
       p = parameters.shift
 
       if p == Rouge::Symbol[:&]
-        r[parameters.shift] = values.freeze
+        r[parameters.shift] = Rouge::Seq.seq(values)
         values = []
         next
       end
@@ -503,6 +519,12 @@ class << Rouge::Builtins
         end
 
         r[parameters.shift] = block
+        next
+      end
+
+      if p == :as
+        r[parameters.shift] = Rouge::Seq.seq(original_values)
+        values = []
         next
       end
 
