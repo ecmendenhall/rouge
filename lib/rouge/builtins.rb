@@ -22,11 +22,8 @@ class << Rouge::Builtins
   def _compile_let(ns, lexicals, bindings, *body)
     lexicals = lexicals.dup
 
+    # TODO: mimic destructuring to know what get assigned where.
     bindings = bindings.to_a.each_slice(2).flat_map do |k, v|
-      if k.ns
-        raise Rouge::Context::BadBindingError,
-            "cannot LET qualified name"
-      end
       v = Rouge::Compiler.compile(ns, lexicals, v)
       lexicals << k.name
       [k, v]
@@ -494,8 +491,7 @@ class << Rouge::Builtins
             values[0...-2].map {|v| context.eval(v)} +
             context.eval(values[-1]).to_a
       else
-        values =
-            values.map {|v| context.eval(v)}
+        values = values.map {|v| context.eval(v)}
       end
     else
       values = values.dup
@@ -535,6 +531,10 @@ class << Rouge::Builtins
       if p.is_a? Array
         destructure(context, p, values.shift, true, r)
       else
+        if p.ns
+          raise Rouge::Context::BadBindingError,
+              "cannot let qualified name in DESTRUCTURE"
+        end
         r[p] = values.shift
       end
     end

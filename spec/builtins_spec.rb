@@ -14,13 +14,6 @@ describe Rouge::Builtins do
       it { context.readeval("(let [a 1 a 2] a)").should eq 2 }
     end
 
-    describe "vigorous complaints about letting qualified names" do
-      before { ns.set_here :x, nil }
-      
-      it { expect { context.readeval("(let [user.spec/x 42] user.spec/x)")
-                  }.to raise_exception Rouge::Context::BadBindingError }
-    end
-
     it "should compile by adding binding names to bindings" do
       Rouge::Compiler.should_receive(:compile).
           with(ns, kind_of(Set), anything) do |ns, lexicals, f|
@@ -657,6 +650,11 @@ describe Rouge::Builtins do
              Rouge::Builtins._compile_destructure(
                  ns, Set[:y], Rouge::Symbol[:z], Rouge::Symbol[:y])
            }.to_not raise_exception }
+    end
+
+    describe "vigorous complaints about letting qualified names" do
+      it { expect { context.readeval("(destructure [user.spec/x] [1])")
+                  }.to raise_exception Rouge::Context::BadBindingError }
     end
   end
 end
