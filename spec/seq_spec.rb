@@ -2,10 +2,10 @@
 require 'spec_helper'
 require 'rouge'
 
-describe Rouge::Seq::ISeq do
+describe Rouge::Seq::ASeq do
   let(:seq) do
     Class.new do
-      include Rouge::Seq::ISeq
+      include Rouge::Seq::ASeq
       def to_a; [:q]; end
     end.new
   end
@@ -118,7 +118,7 @@ describe Rouge::Seq::Cons do
     it { Rouge::Seq::Cons[1, 2, 3].tail.inspect.should eq "(2 3)" }
   end
 
-  describe "the ISeq implementation" do
+  describe "the ASeq implementation" do
     subject { Rouge::Seq::Cons[1, 2, 3] }
 
     describe "#first" do

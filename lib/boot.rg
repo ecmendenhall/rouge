@@ -27,6 +27,9 @@
 (defn vector [& args]
   (.to_a args))
 
+(defmacro lazy-seq [& body]
+  `(Rouge.Seq.Lazy. (fn [] ~@body)))
+
 (defn reduce [f coll]
   (.inject (.to_a coll) | f))
 
@@ -35,9 +38,40 @@
      (do
        ~@body)))
 
+(defn cons [head tail]
+  (Rouge.Seq.Cons. head tail))
+
+(defn count [coll]
+  (.count coll))
+
+(defn = [a b]
+  (.== a b))
+
+(defn nil? [x]
+  (.nil? x))
+
+(defmacro or
+  ([])
+  ([x] x)
+  ([x & xs] `(let [r# ~x]
+               (if r# r# (or ~@xs)))))
+
+(defmacro and
+  ([] true)
+  ([x] x)
+  ([x & xs] `(let [r# ~x]
+               (if (not r#) r# (and ~@xs)))))
+
+(defn empty? [coll]
+  (or (nil? coll)
+      (= 0 (count coll))))
+
 (defn map [f coll]
-  ; XXX lazy seq
-  (.map coll | f))
+  (lazy-seq
+    (if (empty? coll)
+      nil
+      (let [[hd & tl] coll]
+        (cons (f hd) (map f tl))))))
 
 (defn str [& args]
   (let [args (.to_a (map .to_s args))]
@@ -53,21 +87,6 @@
 (defn puts [& args]
   (.print Kernel (apply str args) "\n"))
 
-(defn count [coll]
-  (.length coll))
-
-(defmacro or
-  ([])
-  ([x] x)
-  ([x & xs] `(let [r# ~x]
-               (if r# r# (or ~@xs)))))
-
-(defmacro and
-  ([] true)
-  ([x] x)
-  ([x & xs] `(let [r# ~x]
-               (if (not r#) r# (and ~@xs)))))
-
 (defn class [object]
   (.class object))
 
@@ -75,15 +94,9 @@
   (or (.is_a? coll Rouge.Seq.ISeq)
       (.is_a? coll Array)))
 
-(defn = [a b]
-  (.== a b))
-
 (defn not [bool]
   (or (= bool nil)
       (= bool false)))
-
-(defn empty? [coll]
-  (= 0 (count coll)))
 
 (defn + [& args]
   (if (empty? args)
@@ -104,10 +117,6 @@
 (defn require [lib]
   (.require Kernel lib))
 
-(defn cons [head tail]
-  ; XXX lazy seq
-  (Rouge.Seq.Cons. head tail))
-
 (defn range [from til]
   ; XXX this will blow so many stacks
   (if (= from til)
@@ -125,9 +134,6 @@
 
 (defn nth [coll index]
   (.[] (seq coll) index))
-
-(defn nil? [x]
-  (.nil? x))
 
 (defn first [coll]
   (let [s (seq coll)]
@@ -169,11 +175,12 @@
 (defmacro binding [bindings & body]
   (let [var-ize (fn [var-vals]
                   (.flatten
-                    (map
-                      (fn [pair]
-                        (let [[key val] pair]
-                          [`(.name (var ~key)) val]))
-                      (.each_slice var-vals 2))
+                    (.to_a
+                      (map
+                        (fn [pair]
+                          (let [[key val] pair]
+                            [`(.name (var ~key)) val]))
+                        (.each_slice var-vals 2)))
                     1))]
   `(try
      (push-thread-bindings (hash-map ~@(var-ize bindings)))

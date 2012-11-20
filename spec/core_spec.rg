@@ -84,5 +84,34 @@
     ; this fails too -- something weird.
     (is (= '('inc 3) (macroexpand '(-> 3 'inc))))))
 
+(testing "map"
+  (is (= Rouge.Seq.Lazy (class (map inc [1 2 3]))))
+  (is (= '(2 3 4) (map inc [1 2 3])))
+  (is (= 1
+         (let [q (atom 0)
+               lazy (map #(do (swap! q inc) (inc %)) [1 2 3])]
+           (first lazy)
+           @q)))
+  (is (= 1
+         (let [q (atom 0)
+               lazy (map #(do (swap! q inc) (inc %)) [1 2 3])]
+           (first lazy)
+           (first lazy)
+           @q)))
+  (is (= 2
+         (let [q (atom 0)
+               lazy (map #(do (swap! q inc) (inc %)) [1 2 3])]
+           (first (next lazy))
+           @q)))
+  (is (= 3
+         (let [q (atom 0)
+               lazy (map #(do (swap! q inc) (inc %)) [1 2 3])]
+           (first (next (next lazy)))
+           @q)))
+  (is (= 3
+         (let [q (atom 0)
+               lazy (map #(do (swap! q inc) (inc %)) [1 2 3])]
+           (first (next (next (next lazy))))
+           @q))))
 
 ; vim: set ft=clojure:

@@ -5,7 +5,11 @@ module Rouge::Seq
 
   class Cons; end
 
-  module ISeq
+  module ISeq; end
+
+  module ASeq
+    include ISeq
+
     def inspect
       "(#{to_a.map(&:inspect).join " "})"
     end
@@ -41,6 +45,8 @@ module Rouge::Seq
 
       l
     end
+
+    alias count length
 
     def [](i)
       return to_a[i] if i.is_a? Range
@@ -97,7 +103,7 @@ module Rouge::Seq
   end
 
   class << Empty
-    include ISeq
+    include ASeq
 
     def inspect; "()"; end
     def to_s; inspect; end
@@ -114,11 +120,12 @@ module Rouge::Seq
   Empty.freeze
 
   class Cons
-    include ISeq
+    include ASeq
 
     def initialize(head, tail)
       if tail and !tail.is_a?(ISeq)
-        raise ArgumentError, "tail should be an ISeq, not #{tail.inspect}"
+        raise ArgumentError,
+            "tail should be an ISeq, not #{tail.inspect} (#{tail.class})"
       end
 
       @head, @tail = head, tail
@@ -142,7 +149,7 @@ module Rouge::Seq
   end
 
   class Array
-    include ISeq
+    include ASeq
 
     def initialize(array, i)
       @array, @i = array, i
@@ -171,7 +178,7 @@ module Rouge::Seq
       if @realized
         @result
       else
-        @result = Rouge::Seq.seq(@body.call)
+        @result = Rouge::Seq.seq(@body.call) || Empty
         @realized = true
         @result
       end
@@ -181,13 +188,12 @@ module Rouge::Seq
       raise
     end
 
-    def first
-      seq.first
+    def method_missing(sym, *args, &block)
+      seq.send(sym, *args, &block)
     end
 
-    def next
-      seq.next
-    end
+    def inspect; seq.inspect; end
+    def to_s; seq.to_s; end
   end
 
   UnknownSeqError = Class.new(StandardError)
