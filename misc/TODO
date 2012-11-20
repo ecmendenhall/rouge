@@ -3,7 +3,7 @@ NEXT:
 - (ruby/)Time/now ==> Time.now
 - continue decruft Context, shift tests to Compiler as appropriate; revise most
   specs.
-- destructuring (in FN, LET, everywhere else)
+- extend DESTRUCTURE from LET to FN, etc.
 - refactor DEFN, DEFMACRO, LET, BINDING(?) to make use of above
 - may be faster for general wrapper classes to inherit Struct? seems to be a
   bit magic wrt. speed.
