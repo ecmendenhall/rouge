@@ -16,6 +16,10 @@ class Rouge::Atom
   def swap! f, *args
     @value = f.call(@value, *args)
   end
+
+  def reset! v
+    @value = v
+  end
 end
 
 # vim: set sw=2 et cc=80:

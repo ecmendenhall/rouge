@@ -197,6 +197,9 @@
 (defn swap! [atom f & args]
   (apply .swap! atom f args))
 
+(defn reset! [atom v]
+  (.reset! atom v))
+
 (defn inc [v]
   (+ v 1))
 
