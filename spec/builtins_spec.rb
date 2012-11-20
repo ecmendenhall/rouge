@@ -14,21 +14,53 @@ describe Rouge::Builtins do
       it { context.readeval("(let [a 1 a 2] a)").should eq 2 }
     end
 
-    it "should compile by adding binding names to bindings" do
-      Rouge::Compiler.should_receive(:compile).
-          with(ns, kind_of(Set), anything) do |ns, lexicals, f|
-            case f
-              when Rouge::Symbol[:c] then lexicals.should eq Set[]
-              when 2 then lexicals.should eq Set[:a]
-              when 1 then lexicals.should eq Set[:a, :b]
-            end
-        end.exactly(3).times
+    describe "destructuring" do
+      it { context.readeval("(let [[a b] [1 2]] [a b])").should eq [1, 2] }
+      it { context.readeval("(let [{:keys [a]} {:b 1 :a 2}] a)").should eq 2 }
+    end
 
-      Rouge::Builtins._compile_let(
-        ns, Set.new,
-        [Rouge::Symbol[:a], Rouge::Symbol[:c],
-         Rouge::Symbol[:b], 2],
-        1)
+    describe "compilation by adding binding names to bindings" do
+      context "flat" do
+        before do
+          Rouge::Compiler.should_receive(:compile).
+            with(ns, kind_of(Set), anything) do |ns, lexicals, f|
+              case f
+                when Rouge::Symbol[:c] then lexicals.should eq Set[]
+                when 2 then lexicals.should eq Set[:a]
+                when 1 then lexicals.should eq Set[:a, :b]
+              end
+          end.exactly(3).times
+        end
+
+        it do
+          Rouge::Builtins._compile_let(
+            ns, Set.new,
+            [Rouge::Symbol[:a], Rouge::Symbol[:c],
+             Rouge::Symbol[:b], 2],
+            1)
+        end
+      end
+
+      context "nested" do
+        before do
+          Rouge::Compiler.should_receive(:compile).
+            with(ns, kind_of(Set), anything) do |ns, lexicals, f|
+              case f
+                when [1, 2] then lexicals.should eq Set[]
+                when 3 then lexicals.should eq Set[:a, :b]
+                when 1 then lexicals.should eq Set[:a, :b, :c]
+              end
+          end.exactly(3).times
+        end
+
+        it do
+          Rouge::Builtins._compile_let(
+            ns, Set.new,
+            [[Rouge::Symbol[:a], Rouge::Symbol[:b]], [1, 2],
+             Rouge::Symbol[:c], 3],
+            1)
+        end
+      end
     end
   end
 

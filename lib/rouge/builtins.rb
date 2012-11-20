@@ -22,15 +22,28 @@ class << Rouge::Builtins
   def _compile_let(ns, lexicals, bindings, *body)
     lexicals = lexicals.dup
 
-    # TODO: mimic destructuring to know what get assigned where.
     bindings = bindings.to_a.each_slice(2).flat_map do |k, v|
       v = Rouge::Compiler.compile(ns, lexicals, v)
-      lexicals << k.name
+      _compile_let_find_lexicals(lexicals, k)
       [k, v]
     end
     [Rouge::Symbol[:let],
      bindings,
      *Rouge::Compiler.compile(ns, lexicals, body)]
+  end
+
+  def _compile_let_find_lexicals(lexicals, form)
+    form = form.dup
+
+    if form.is_a?(Array)
+      while form.length > 0
+        p = form.shift
+
+        lexicals << p.name
+      end
+    else
+      raise ArgumentError, "unknown LHS of LET expression"
+    end
   end
 
   def context(context)
@@ -69,11 +82,13 @@ class << Rouge::Builtins
       block = nil
     end
 
-    fn = lambda {|*args, &blockgiven|
-      if !rest ? (args.length != argv.length) : (args.length < argv.length)
+    fn = lambda {|*inner_args, &blockgiven|
+      if !rest ? (inner_args.length != argv.length) :
+                 (inner_args.length < argv.length)
         begin
           raise ArgumentError,
-              "wrong number of arguments (#{args.length} for #{argv.length})"
+              "wrong number of arguments " \
+              "(#{inner_args.length} for #{argv.length})"
         rescue ArgumentError => e
           orig = e.backtrace.pop
           e.backtrace.unshift "(rouge):?:FN call (#{name || "<anonymous>"})"
@@ -85,10 +100,17 @@ class << Rouge::Builtins
       context = Rouge::Context.new(context)
 
       argv.each.with_index do |arg, i|
-        context.set_here(arg.name, args[i])
+        context.set_here(arg.name, inner_args[i])
       end
-      context.set_here(rest.name, Rouge::Seq::Cons[*args[argv.length..-1]]) if rest
-      context.set_here(block.name, blockgiven) if block
+
+      if rest
+        context.set_here(rest.name,
+                         Rouge::Seq::Cons[*inner_args[argv.length..-1]])
+      end
+
+      if block
+        context.set_here(block.name, blockgiven)
+      end
 
       begin
         self.do(context, *body)
@@ -280,11 +302,11 @@ class << Rouge::Builtins
       end
 
       macro = Rouge::Macro[
-        lambda {|*args, &blockgiven|
-          if arities[args.length]
-            arities[args.length].call *args, &blockgiven
+        lambda {|*inner_args, &blockgiven|
+          if arities[inner_args.length]
+            arities[inner_args.length].call(*inner_args, &blockgiven)
           elsif arities[-1]
-            arities[-1].call *args, &blockgiven
+            arities[-1].call(*inner_args, &blockgiven)
           else
             raise ArgumentError, "no matching arity in macro"
           end
