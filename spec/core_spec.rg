@@ -112,6 +112,12 @@
          (let [q (atom 0)
                lazy (map #(do (swap! q inc) (inc %)) [1 2 3])]
            (first (next (next (next lazy))))
-           @q))))
+           @q)))
+
+  (testing "in destructuring"
+      (is (= 1
+             (let [q (atom 0)
+                   [hd & tl] (map #(do (swap! q inc) (inc %)) [1 2 3])]
+               @q)))))
 
 ; vim: set ft=clojure:
