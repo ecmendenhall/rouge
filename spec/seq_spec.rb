@@ -148,6 +148,44 @@ describe Rouge::Seq::Array do
   end
 end
 
+describe Rouge::Seq::Lazy do
+  let(:sentinel) { double("sentinel") }
+  let(:trigger) { Rouge::Seq::Lazy.new(lambda { sentinel.call }) }
+  let(:non_seq) { Rouge::Seq::Lazy.new(lambda { 7 }) }
+  let(:error) { Rouge::Seq::Lazy.new(lambda { raise "boom" }) }
+
+  describe "not evalled until necessary" do
+    context "not realised" do
+      before { sentinel.should_not_receive(:call) }
+      it { trigger }
+    end
+
+    context "realised" do
+      before { sentinel.should_receive(:call).and_return [1, 2] }
+
+      it { trigger.seq.should eq [1, 2] }
+      it { trigger.first.should eq 1 }
+      it { trigger.next.should eq [2] }
+    end
+  end
+
+  describe "not multiply evalled on non-seq" do
+    it do
+      # Weird, but most similar to Clojure (by experiment).
+      expect { non_seq.seq }.to raise_exception
+      expect { non_seq.seq.should be Rouge::Seq::Empty
+             }.to_not raise_exception
+    end
+  end
+
+  describe "multiply evalled on error" do
+    it do
+      expect { error.seq }.to raise_exception
+      expect { error.seq }.to raise_exception
+    end
+  end
+end
+
 describe Rouge::Seq do
   describe ".seq" do
     context Array do

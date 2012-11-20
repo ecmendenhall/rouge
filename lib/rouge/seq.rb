@@ -159,6 +159,39 @@ module Rouge::Seq
     end
   end
 
+  class Lazy
+    include ISeq
+
+    def initialize(body)
+      @body = body
+      @realized = false
+    end
+
+    def seq
+      if @realized
+        @result
+      else
+        @result = Rouge::Seq.seq(@body.call)
+        @realized = true
+        @result
+      end
+    rescue UnknownSeqError
+      @realized = true
+      @result = Empty
+      raise
+    end
+
+    def first
+      seq.first
+    end
+
+    def next
+      seq.next
+    end
+  end
+
+  UnknownSeqError = Class.new(StandardError)
+
   def self.seq(form)
     case form
     when ISeq
@@ -172,7 +205,7 @@ module Rouge::Seq
         Rouge::Seq::Array.new(form, 0)
       end
     else
-      raise "TODO; unknown seq"
+      raise UnknownSeqError
     end
   end
 end
