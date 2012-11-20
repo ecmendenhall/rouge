@@ -14,7 +14,7 @@ class << Rouge::Builtins
   def let(context, bindings, *body)
     context = Rouge::Context.new context
     bindings.to_a.each_slice(2) do |k, v|
-      destructure(context, k, v).each do |sk,sv|
+      destructure(context, k, v).each do |sk, sv|
         context.set_here sk.name, sv
       end
     end
@@ -523,7 +523,7 @@ class << Rouge::Builtins
       raise ArgumentError, "unknown destructure parameter list"
     end
 
-    unless evalled
+    if !evalled and values.is_a? Array
       if values[-2] == Rouge::Symbol[:|]
         block = context.eval(values[-1])
         block_supplied = true
@@ -539,7 +539,12 @@ class << Rouge::Builtins
         values = values.map {|v| context.eval(v)}
       end
     else
-      values = values.dup
+      values = context.eval(values)
+      if values.is_a?(Array)
+        values = values.dup
+      else
+        values = values.to_a
+      end
     end
 
     original_values = values.dup

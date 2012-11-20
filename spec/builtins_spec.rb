@@ -15,13 +15,18 @@ describe Rouge::Builtins do
     end
 
     describe "destructuring" do
-      it { context.readeval("(let [[a b] [1 2]] [a b])").should eq [1, 2] }
-      it { context.readeval("(let [{a :x [b] :y} {:x 3 :y [4]}] b)").
+      before { context.set_here :"one-two", [1, 2] }
+      it { context.readeval("(let [[a b] one-two] [a b])").should eq [1, 2] }
+
+      before { context.set_here :"x3-y4l", {:x => 3, :y => [4]} }
+      it { context.readeval("(let [{a :x [b] :y} x3-y4l] b)").
                should eq 4 }
-      it { context.readeval("(let [{:keys [a]} {:b 5 :a 6}] a)").should eq 6 }
-      it { context.readeval("(let [[a & b] [1 2 3]] [a b])").
+      it { context.readeval("(let [{:keys [x]} x3-y4l] x)").should eq 3 }
+
+      before { context.set_here :"one-two-three", [1, 2, 3] }
+      it { context.readeval("(let [[a & b] one-two-three] [a b])").
                should eq [1, [2, 3]] }
-      it { context.readeval("(let [[a & b :as f] [1 2 3]] [a b f])").
+      it { context.readeval("(let [[a & b :as f] one-two-three] [a b f])").
                should eq [1, [2, 3], [1, 2, 3]] }
     end
 

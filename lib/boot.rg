@@ -171,8 +171,7 @@
                   (.flatten
                     (map
                       (fn [pair]
-                        (let [key (first pair)
-                              val (second pair)]
+                        (let [[key val] pair]
                           [`(.name (var ~key)) val]))
                       (.each_slice var-vals 2))
                     1))]
@@ -202,8 +201,7 @@
   (if (= 0 (count xs))
     coll
     (let [c (class coll)
-          hd (first xs)
-          tl (rest xs)]
+          [hd & tl] xs]
       (if (= c Rouge.Seq.Cons)
         (apply conj (Rouge.Seq.Cons coll hd) tl)
         (apply conj (.push (.dup coll) hd) tl)))))
