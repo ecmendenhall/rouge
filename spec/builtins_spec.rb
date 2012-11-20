@@ -16,7 +16,13 @@ describe Rouge::Builtins do
 
     describe "destructuring" do
       it { context.readeval("(let [[a b] [1 2]] [a b])").should eq [1, 2] }
-      it { context.readeval("(let [{:keys [a]} {:b 1 :a 2}] a)").should eq 2 }
+      it { context.readeval("(let [{a :x [b] :y} {:x 3 :y [4]}] b)").
+               should eq 4 }
+      it { context.readeval("(let [{:keys [a]} {:b 5 :a 6}] a)").should eq 6 }
+      it { context.readeval("(let [[a & b] [1 2 3]] [a b])").
+               should eq [1, [2, 3]] }
+      it { context.readeval("(let [[a & b :as f] [1 2 3]] [a b f])").
+               should eq [1, [2, 3], [1, 2, 3]] }
     end
 
     describe "compilation by adding binding names to bindings" do

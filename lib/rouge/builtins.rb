@@ -14,7 +14,9 @@ class << Rouge::Builtins
   def let(context, bindings, *body)
     context = Rouge::Context.new context
     bindings.to_a.each_slice(2) do |k, v|
-      context.set_here k.name, context.eval(v)
+      destructure(context, k, v).each do |sk,sv|
+        context.set_here sk.name, sv
+      end
     end
     self.do(context, *body)
   end
@@ -27,22 +29,36 @@ class << Rouge::Builtins
       _compile_let_find_lexicals(lexicals, k)
       [k, v]
     end
+
     [Rouge::Symbol[:let],
      bindings,
      *Rouge::Compiler.compile(ns, lexicals, body)]
   end
 
   def _compile_let_find_lexicals(lexicals, form)
-    form = form.dup
-
-    if form.is_a?(Array)
+    if form.is_a?(Rouge::Symbol)
+      lexicals << form.name
+    elsif form.is_a?(Hash) and form.keys == [:keys]
+      form.values[0].each do |n|
+        lexicals << n.name
+      end
+    elsif form.is_a?(Hash)
+      form.keys.each do |p|
+        _compile_let_find_lexicals(lexicals, p)
+      end
+    elsif form.is_a?(Array)
+      form = form.dup
       while form.length > 0
         p = form.shift
 
-        lexicals << p.name
+        next if p == :as
+        next if p == Rouge::Symbol[:&]
+        next if p == Rouge::Symbol[:|]
+
+        _compile_let_find_lexicals(lexicals, p)
       end
     else
-      raise ArgumentError, "unknown LHS of LET expression"
+      raise ArgumentError, "unknown LHS of LET expression: #{form.inspect}"
     end
   end
 
@@ -246,7 +262,7 @@ class << Rouge::Builtins
           elsif param.is_a? Array and
                 param.length == 3 and
                 param[0].is_a? Rouge::Symbol and
-                param[1] == :as and 
+                param[1] == :as and
                 param[2].is_a? Rouge::Symbol
             unless Rouge::Namespace.exists? param[0].name
               context.readeval(File.read("#{param[0].name}.rg"))
@@ -381,7 +397,7 @@ class << Rouge::Builtins
       raise e
     end
   end
-  
+
   def try(context, *body)
     return unless body.length > 0
 
@@ -456,7 +472,7 @@ class << Rouge::Builtins
          :body => form[3..-1].freeze}
     end
 
-    form = 
+    form =
     [Rouge::Symbol[:try],
      *Rouge::Compiler.compile(ns, lexicals, body),
      *catches.reverse.map {|c|
@@ -481,25 +497,32 @@ class << Rouge::Builtins
   def destructure(context, parameters, values, evalled=false, r={})
     # TODO: can probably move this elsewhere as a regular function.
 
-    if parameters.is_a?(Hash) and parameters.keys == [:keys]
-      keys = parameters.values[0]
-      return Hash[context.eval(values).select do |k,v|
-        keys.include?(Rouge::Symbol[k])
-      end.map {|k,v| [Rouge::Symbol[k], v]}]
+    if parameters.is_a?(Rouge::Symbol)
+      values = context.eval(values) if !evalled
+      r[parameters] = values
+      return r
     end
 
-    if parameters.is_a?(Hash) and
-       parameters.keys.all? {|k| k.is_a?(Rouge::Symbol)}
-      values = context.eval(values)
-      return Hash[parameters.map do |local, foreign|
-        [local, values[foreign]]
-      end]
+    if parameters.is_a?(Hash) and parameters.keys == [:keys]
+      keys = parameters.values[0]
+      context.eval(values).select do |k,v|
+        keys.include?(Rouge::Symbol[k])
+      end.each {|k,v| r[Rouge::Symbol[k]] = v}
+      return r
+    end
+
+    if parameters.is_a?(Hash)
+      values = context.eval(values) if !evalled
+      parameters.each do |local, foreign|
+        destructure(context, local, values[foreign], true, r)
+      end
+      return r
     end
 
     if !parameters.is_a?(Array) and !evalled
       raise ArgumentError, "unknown destructure parameter list"
     end
-    
+
     unless evalled
       if values[-2] == Rouge::Symbol[:|]
         block = context.eval(values[-1])
