@@ -621,20 +621,6 @@ describe Rouge::Builtins do
                      Rouge::Symbol[:c] => 3}.to_s)
     end
 
-    describe "errors on arity mismatch, no errors on 'not'" do
-      it { expect {
-             context.readeval("(destructure [a b] [1 2 3])")
-           }.to raise_exception ArgumentError }
-           
-      it { expect {
-             context.readeval("(destructure [a b c] [1 2])")
-           }.to raise_exception ArgumentError }
-           
-      it { expect {
-             context.readeval("(destructure [& a] [1 2 3])")
-           }.to_not raise_exception }
-    end
-
     it "should assign rest arguments" do
       context.readeval("(destructure [a & b] [1 2 3])").to_s.
           should eq({Rouge::Symbol[:a] => 1,
@@ -698,6 +684,23 @@ describe Rouge::Builtins do
     describe "vigorous complaints about letting qualified names" do
       it { expect { context.readeval("(destructure [user.spec/x] [1])")
                   }.to raise_exception Rouge::Context::BadBindingError }
+    end
+
+    describe "not forcing what needn't be forced" do
+      it { Rouge::Builtins.destructure(
+               context,
+               [Rouge::Symbol[:a], Rouge::Symbol[:&], Rouge::Symbol[:b]],
+               Rouge::Seq::Lazy.new(lambda do
+                 Rouge::Seq::Cons.new(
+                   1,
+                   Rouge::Seq::Lazy.new(lambda do
+                     Rouge::Seq::Cons.new(
+                       2,
+                       Rouge::Seq::Lazy.new(lambda do
+                         raise "shouldn't be forced"
+                       end))
+                   end))
+               end)) }
     end
   end
 end

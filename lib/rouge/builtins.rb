@@ -540,22 +540,18 @@ class << Rouge::Builtins
       end
     else
       values = context.eval(values)
-      if values.is_a?(Array)
-        values = values.dup
-      else
-        values = values.to_a
-      end
     end
 
-    original_values = values.dup
+    values = Rouge::Seq.seq(values)
+    original_values = values
 
     parameters = parameters.dup
     while parameters.length > 0
       p = parameters.shift
 
       if p == Rouge::Symbol[:&]
-        r[parameters.shift] = Rouge::Seq.seq(values)
-        values = []
+        r[parameters.shift] = values
+        values = Rouge::Seq::Empty
         next
       end
 
@@ -570,27 +566,21 @@ class << Rouge::Builtins
 
       if p == :as
         r[parameters.shift] = Rouge::Seq.seq(original_values)
-        values = []
+        values = Rouge::Seq::Empty
         next
       end
 
-      if values.length == 0
-        raise ArgumentError, "fewer values than parameters"
-      end
-
       if p.is_a? Array
-        destructure(context, p, values.shift, true, r)
+        destructure(context, p, Rouge::Seq.seq(values.first), true, r)
       else
         if p.ns
           raise Rouge::Context::BadBindingError,
               "cannot let qualified name in DESTRUCTURE"
         end
-        r[p] = values.shift
+        r[p] = values ? values.first : nil
       end
-    end
 
-    if values.length > 0
-      raise ArgumentError, "fewer parameters than values"
+      values = values ? values.next : nil
     end
 
     r
