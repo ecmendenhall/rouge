@@ -245,6 +245,35 @@ class Rouge::Reader
     end
   end
 
+  def regexp
+    s = ""
+    t = '"'
+    while true
+      c = @src[@n]
+
+      if c.nil?
+        reader_raise EndOfDataError, "in regex, got: #{s}"
+      end
+
+      @n += 1
+
+      if c == t
+        break
+      end
+
+      if c == ?\\
+        c = "\\"
+        if peek == ?"
+          c << consume
+        end
+      end
+
+      s += c
+    end
+
+    Regexp.new(s).freeze
+  end
+
   def dispatch
     consume
     case peek
@@ -261,6 +290,9 @@ class Rouge::Reader
       consume
       lex
       lex
+    when '"'
+      consume
+      regexp
     else
       reader_raise UnexpectedCharacterError, "#{peek.inspect} in #dispatch"
     end

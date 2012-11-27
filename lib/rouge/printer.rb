@@ -67,6 +67,8 @@ module Rouge::Printer
       end
     when Rouge::Builtin
       out << "rouge.builtin/#{form.inner.name}"
+    when Regexp
+      out << "#\"#{form.source}\""
     else
       out << form.inspect
     end
