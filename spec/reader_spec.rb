@@ -396,6 +396,10 @@ describe Rouge::Reader do
       @ns.read('#_(xyz abc) :f').should eq :f
     end
   end
+
+  describe "regexp" do
+    it { @ns.read('#"abc"').should be_an_instance_of Regexp }
+  end
 end
 
 # vim: set sw=2 et cc=80:

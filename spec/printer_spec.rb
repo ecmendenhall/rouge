@@ -176,9 +176,14 @@ describe Rouge::Printer do
                should eq "rouge.builtin/def" }
     end
 
-    context  "unknown forms" do
+    context "unknown forms" do
       let(:l) { lambda {} }
       it { Rouge.print(l, "").should eq l.inspect }
+    end
+
+    context "regexp" do
+      let(:rx) { Regexp.new("abc") }
+      it { Rouge.print(rx, "").should eq "#\"abc\"" }
     end
   end
 end
