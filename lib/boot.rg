@@ -243,6 +243,8 @@
   ([x f & rest]
    `(-> (-> ~x ~f) ~@rest)))
 
+(defn re-pattern [s]
+  (.compile Regexp s))
 
 (ns rouge.test
   (:use rouge.core ruby))

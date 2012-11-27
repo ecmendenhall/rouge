@@ -90,6 +90,7 @@ Unreserved thanks to the following people for their contributions.
 * [Russell Whitaker](https://github.com/russellwhitaker)
 * [Misha Moroshko](https://github.com/moroshko)
 * [Anthony Grimes](https://github.com/Raynes)
+* [Joel Holdbrooks](https://github.com/noprompt)
 
 ## copyright and licensing
 
