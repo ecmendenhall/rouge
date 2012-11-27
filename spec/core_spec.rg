@@ -115,7 +115,7 @@
            @q)))
 
   (testing "in destructuring"
-      (is (= 1
+      (is (= 2
              (let [q (atom 0)
                    [hd & tl] (map #(do (swap! q inc) (inc %)) [1 2 3])]
                @q)))))
