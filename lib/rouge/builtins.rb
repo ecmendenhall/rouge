@@ -106,9 +106,9 @@ class << Rouge::Builtins
               "wrong number of arguments " \
               "(#{inner_args.length} for #{argv.length})"
         rescue ArgumentError => e
-          orig = e.backtrace.pop
-          e.backtrace.unshift "(rouge):?:FN call (#{name || "<anonymous>"})"
-          e.backtrace.unshift orig
+          # orig = e.backtrace.pop
+          # e.backtrace.unshift "(rouge):?:FN call (#{name || "<anonymous>"})"
+          # e.backtrace.unshift orig
           raise e
         end
       end
@@ -131,7 +131,7 @@ class << Rouge::Builtins
       begin
         self.do(context, *body)
       rescue => e
-        e.backtrace.unshift "(rouge):?: in #{name || "<anonymous>"}"
+        # e.backtrace.unshift "(rouge):?: in #{name || "<anonymous>"}"
         raise e
       end
     }

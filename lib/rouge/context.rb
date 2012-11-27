@@ -82,10 +82,10 @@ class Rouge::Context
     end
   rescue Exception => e
     # Remove Rouge-related lines unless the exception originated in Rouge.
-    root = File.dirname(File.dirname(__FILE__))
-    e.backtrace.map! {|line|
-      line.scan(root).length > 0 ? nil : line
-    }.compact! unless e.backtrace[0].scan(root).length > 0
+    # root = File.dirname(File.dirname(__FILE__))
+    # e.backtrace.map! {|line|
+      # line.scan(root).length > 0 ? nil : line
+    # }.compact! unless e.backtrace[0].scan(root).length > 0
     raise e
   end
 
@@ -187,16 +187,16 @@ class Rouge::Context
     begin
       block.call
     rescue Exception => e
-      target = block.source_location.join(':')
-      changed = 0
-      $!.backtrace.map! {|line|
-        if line.scan("#{target}:").size > 0 and changed == 0
-          changed += 1
-          Rouge.print(form, name.dup)
-        else
-          line
-        end
-      }
+      # target = block.source_location.join(':')
+      # changed = 0
+      # $!.backtrace.map! {|line|
+        # if line.scan("#{target}:").size > 0 and changed == 0
+          # changed += 1
+          # Rouge.print(form, name.dup)
+        # else
+          # line
+        # end
+      # }
       raise e
     end
   end
