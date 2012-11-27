@@ -268,7 +268,7 @@ class Rouge::Reader
         end
       end
 
-      s += c
+      s << c
     end
 
     Regexp.new(s).freeze
