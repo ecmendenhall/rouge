@@ -210,8 +210,10 @@ module Rouge::Seq
       else
         Rouge::Seq::Array.new(form, 0)
       end
+    when Enumerator
+      seq(form.to_a)
     else
-      raise UnknownSeqError
+      raise UnknownSeqError, form.inspect
     end
   end
 end
