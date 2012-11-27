@@ -252,7 +252,7 @@ class Rouge::Reader
       c = @src[@n]
 
       if c.nil?
-        reader_raise EndOfDataError, "in regex, got: #{s}"
+        reader_raise EndOfDataError, "in regexp, got: #{s}"
       end
 
       @n += 1
