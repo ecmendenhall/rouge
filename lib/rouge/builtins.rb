@@ -113,23 +113,23 @@ class << Rouge::Builtins
         end
       end
 
-      context = Rouge::Context.new(context)
+      inner_context = Rouge::Context.new(context)
 
       argv.each.with_index do |arg, i|
-        context.set_here(arg.name, inner_args[i])
+        inner_context.set_here(arg.name, inner_args[i])
       end
 
       if rest
-        context.set_here(rest.name,
+        inner_context.set_here(rest.name,
                          Rouge::Seq::Cons[*inner_args[argv.length..-1]])
       end
 
       if block
-        context.set_here(block.name, blockgiven)
+        inner_context.set_here(block.name, blockgiven)
       end
 
       begin
-        self.do(context, *body)
+        self.do(inner_context, *body)
       rescue => e
         # e.backtrace.unshift "(rouge):?: in #{name || "<anonymous>"}"
         raise e
