@@ -50,6 +50,10 @@
 (defn nil? [x]
   (.nil? x))
 
+(defn identical? [x y]
+  "Returns true if x and y are the same object."
+  (= (.object_id x) (.object_id y)))
+
 (defmacro or
   ([])
   ([x] x)
@@ -200,11 +204,116 @@
 (defn reset! [atom v]
   (.reset! atom v))
 
-(defn inc [v]
-  (+ v 1))
+(defn quot [n1 n2]
+  "Quotient of dividing n1 by n2."
+  (.div n1 n2))
 
-(defn dec [v]
-  (- v 1))
+(defn rem [n1 n2]
+  "Remainder of dividing n1 by n2."
+  (.remainder n1 n2))
+
+(defn mod [n1 n2]
+  "Modulus of n1 and n2."
+  (.modulo n1 n2))
+
+(defn inc [n]
+  "Returns one greater than n."
+  (+ n 1))
+
+(defn dec [n]
+  "Returns one less than n."
+  (- n 1))
+
+(defn max [x & more]
+  "Returns the greatest value of a set of values."
+  (reduce #(if (> %1 %2) %1 %2) (apply vector x more)))
+
+(defn min [x & more]
+  "Returns the least value of a set of values."
+  (reduce #(if (< %1 %2) %1 %2) (apply vector x more)))
+
+(defn zero? [n]
+  "Returns true if n is zero, otherwise false."
+  (.zero? n))
+
+(defn pos? [n]
+  "Returns true if n is positive, otherwise false."
+  (.> n 0))
+
+(defn neg? [n]
+  "Returns true if n is negative, otherwise false."
+  (.> 0 n))
+
+(defn odd? [n]
+  "Returns true if n is odd, otherwise false."
+  (.odd? n))
+
+(defn even? [n]
+  "Returns true if n is even, otherwise false."
+  (.even? n))
+
+(defn number? [n]
+  (.is_a? n Numeric))
+
+(defn integer? [n]
+  "Returns true if n is an integer."
+  (.is_a? n Integer))
+
+(defn float? [n]
+  "Returns true if n is a floating point number."
+  (.is_a? n Float))
+
+(defn complex? [n]
+  "Returns true if n is a complex number."
+  (.is_a? n Complex))
+
+(defn rational? [n]
+  "Returns true if n is a rational number."
+  (.is_a? n Rational))
+
+(defn bit-and [n1 n2]
+  "Bitwise and."
+  (if (and (integer? n1) (integer? n2))
+    (.& n1 n2)
+    (let [msg (str "bit operation not supported for "
+                   (class (or (and (not (integer? n1)) n1)
+                              (and (not (integer? n2)) n2))))]
+      (throw (ArgumentError. msg)))))
+
+(defn bit-or [n1 n2]
+  "Bitwise or."
+  (if (and (integer? n1) (integer? n2))
+    (.| n1 n2)
+    (let [msg (str "bit operation not supported for "
+                   (class (or (and (not (integer? n1)) n1)
+                              (and (not (integer? n2)) n2))))]
+      (throw (ArgumentError. msg)))))
+
+(defn bit-xor [n1 n2]
+  "Bitwise exclusive or."
+  (.send n1 (.to_sym "^") n2))
+
+(defn bit-not [n]
+  "Bitwise complement."
+  (.send n (.to_sym "~")))
+
+(defn bit-shift-left [n1 n2]
+  "Bitwise shift left."
+  (if (and (integer? n1) (integer? n2))
+    (.<< n1 n2)
+    (let [msg (str "bit operation not supported for "
+                   (class (or (and (not (integer? n1)) n1)
+                              (and (not (integer? n2)) n2))))]
+      (throw (ArgumentError. msg)))))
+
+(defn bit-shift-right [n1 n2]
+  "Bitwise shift right."
+  (if (and (integer? n1) (integer? n2))
+    (.>> n1 n2)
+    (let [msg (str "bit operation not supported for "
+                   (class (or (and (not (integer? n1)) n1)
+                              (and (not (integer? n2)) n2))))]
+      (throw (ArgumentError. msg)))))
 
 (defn conj [coll & xs]
   ; only cons and vector.  Also SUCKS.
