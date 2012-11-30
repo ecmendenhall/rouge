@@ -123,11 +123,9 @@
 
 (defn range [from til]
   ; XXX this will blow so many stacks
-  ;(if (= from til)
-  ;  Rouge.Seq.Empty
-  ;  (cons from (range (+ 1 from) til))))
-  ; Use a fully realized Ruby range for now.
-  (.to_a (Range. from til)))
+  (if (= from til)
+    Rouge.Seq.Empty
+    (cons from (range (+ 1 from) til))))
 
 (defn seq? [object]
   (or (= (class object) Rouge.Seq.Cons)
