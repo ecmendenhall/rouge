@@ -3,7 +3,6 @@ require 'rouge/wrappers'
 
 class Rouge::Reader
   class UnexpectedCharacterError < StandardError; end
-  class InvalidNumberError < StandardError; end
   class EndOfDataError < StandardError; end
 
   attr_accessor :ns
