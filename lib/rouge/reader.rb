@@ -410,13 +410,13 @@ class Rouge::Reader
     end
   end
 
-  # Loose expression for matching a possible numeric literal.
+  # Loose expression for a possible numeric literal.
   MAYBE_NUMBER = /^[+-]?\d[\da-fA-FxX\._+-]*/
 
   # Ruby integer.
   INT = /\d+(?:_\d+)*/
 
-  # Strict expression for matching a numeric literal.
+  # Strict expression for a numeric literal.
   NUMBER = /
   ^[+-]?
   (?:
