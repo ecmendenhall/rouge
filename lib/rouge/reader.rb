@@ -3,7 +3,10 @@ require 'rouge/wrappers'
 
 class Rouge::Reader
   class UnexpectedCharacterError < StandardError; end
+  class InvalidNumberError < StandardError; end
   class EndOfDataError < StandardError; end
+
+  attr_accessor :ns
 
   @@gensym_counter = 0
 
@@ -14,12 +17,11 @@ class Rouge::Reader
     @gensyms = []
   end
 
-  attr_accessor :ns
 
   def lex
     r =
       case peek
-      when NUMBER
+      when MAYBE_NUMBER
         number
       when /:/
         keyword
@@ -58,7 +60,7 @@ class Rouge::Reader
   private
 
   def number
-    read_number(slurp(NUMBER))
+    read_number(slurp(MAYBE_NUMBER))
   end
 
   def keyword
@@ -402,28 +404,30 @@ class Rouge::Reader
   end
 
   def read_number s
-    if s.count('.') > 1
-      reader_raise UnexpectedCharacterError, "#{s} in #read_number"
-    end
-
-    neg = 1
-
-    if s[0] == ?-
-      neg = -1
-      s = s[1..-1]
-    elsif s[0] == ?+
-      s = s[1..-1]
-    end
-
-    n = s.gsub(/[^0-9.]+/, '')
-    if n[/\./]
-      neg * n.to_f
+    if NUMBER.match s
+      eval s
     else
-      neg * n.to_i
+      reader_raise UnexpectedCharacterError, "#{s} in #read_number"
     end
   end
 
-  NUMBER = /^[0-9][0-9_.]*/
+  # Loose expression for matching a possible numeric literal.
+  MAYBE_NUMBER = /^[+-]?\d[\da-fA-FxX\._+-]*/
+
+  # Ruby integer.
+  INT = /\d+(?:_\d+)*/
+
+  # Strict expression for matching a numeric literal.
+  NUMBER = /
+  ^[+-]?
+  (?:
+    (?:0[xX][\da-fA-F]+) (?# Hexadecimal integer)
+  | (?:0[bB][01]+) (?# Binary integer)
+  | (?:0\d+) (?# Octal integer)
+  | (?:#{INT}(?:(?:\.#{INT})?(?:[eE][+-]?#{INT})?)?) (?# Integers and floats)
+  )\z
+  /ox
+
   SYMBOL = /^(\.\[\])|([a-zA-Z0-9\-_!&\?\*\/\.\+\|=%$<>#]+)/
 end
 
