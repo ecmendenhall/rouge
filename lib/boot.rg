@@ -269,7 +269,8 @@
 
 (defn rational? [n]
   "Returns true if n is a rational number."
-  (.is_a? n Rational))
+  (or (.is_a? n Rational)
+      (.is_a? n Integer)))
 
 (defn bit-and [n1 n2]
   "Bitwise and."

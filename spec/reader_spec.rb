@@ -20,6 +20,23 @@ describe Rouge::Reader do
       it { @ns.read("23.1").should eq 23.1 }
       it { @ns.read("-23.1").should eq(-23.1) }
       it { @ns.read("+17.04").should eq(17.04) }
+      it { @ns.read("+1_000e-3").should eq(1.0) }
+      it { @ns.read("+1E+3").should eq(1000) }
+    end
+
+    context "binary" do
+      it { @ns.read("+0b10").should eq(2) }
+      it { @ns.read("-0b10").should eq(-2) }
+    end
+
+    context "hexadecimal" do
+      it { @ns.read("+0xf").should eq(15) }
+      it { @ns.read("-0xf").should eq(-15) }
+    end
+
+    context "octal" do
+      it { @ns.read("+0333").should eq(219) }
+      it { @ns.read("-0333").should eq(-219) }
     end
 
     it "should fail on invalid numbers" do
