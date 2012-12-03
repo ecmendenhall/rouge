@@ -404,7 +404,11 @@ class Rouge::Reader
 
   def read_number s
     if NUMBER.match s
-      eval s
+      if s =~ /[.eE]/
+        Float(s)
+      else
+        Integer(s)
+      end
     else
       reader_raise UnexpectedCharacterError, "#{s} in #read_number"
     end
