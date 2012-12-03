@@ -375,6 +375,13 @@
        {:passed @*tests-passed*
         :failed @*tests-failed*})))
 
+(defn format-actual [check]
+  (if (and (seq? check)
+           (= (first check) 'not)
+           (= (count check) 2))
+    (second check)
+    `(not ~check)))
+
 (defmacro is [check]
   `(let [result# (try
                   {:error nil, :result ~check}
@@ -389,10 +396,7 @@
                 (let [error# (get result# :error)]
                   (if error#
                     error#
-                    (if (and (seq? '~check)
-                             (= 'not (first '~check)))
-                      (second '~check)
-                      `(not ~'~check))))]
+                    (format-actual '~check)))]
           (puts "  actual: " (pr-str actual#))))
       (do
         (swap! *tests-passed* inc)
