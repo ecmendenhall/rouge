@@ -269,6 +269,25 @@ describe Rouge::Context do
         end
       end
     end
+
+    it "should allow keywords to be evaluated as functions" do
+      @context.readeval('(:nope {:yep true})').should be_nil
+      @context.readeval('(:test "fail")').should be_nil
+      @context.readeval('(:pale {:pale "ale"})').should eq "ale"
+      @context.readeval('(:red {:white "moscato"} "merlot")').should eq "merlot"
+      expect {
+        @context.readeval('(:will "raise" "an" "error")')
+      }.to raise_error(ArgumentError)
+    end
+
+    it "should allow hashes to be evaluated as functions" do
+      @context.readeval('({:wham "bam"} :boom)').should be_nil
+      @context.readeval('({:slam "dunk"} :slam)').should eq "dunk"
+      @context.readeval('({:immortal false} :mortal true)').should be_true
+      expect {
+        @context.readeval('({:this "will"} :raise "an" "error")')
+      }.to raise_error(ArgumentError)
+    end
   end
 end
 
