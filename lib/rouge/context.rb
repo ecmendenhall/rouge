@@ -197,8 +197,10 @@ class Rouge::Context
           default
         end
       else
-        raise ArgumentError,
-          "Wrong number of args (#{num_args}) passed to ruby/Symbol :#{fun}"
+        raise(
+          ArgumentError,
+          "Wrong number of args (#{num_args}) passed to " \
+            "ruby/Symbol #{fun.inspect}")
       end
     when Hash
       if num_args == 1 || num_args == 2
