@@ -1,6 +1,4 @@
 NEXT:
-- we note that speed decreases as the specs run regardless of what the tests
-  themselves do.
 - tests for (. x y)
 - (ruby/)Time/now ==> Time.now
 - continue decruft Context, shift tests to Compiler as appropriate; revise most
@@ -19,7 +17,6 @@ miscellaeny
 - omit Ruby from tracebacks?
 - better exceptions/errors
 - readline autocomplete
-- package as a gem?
 
 ruby interop
 ------------
@@ -37,12 +34,12 @@ core lang
 - NON-dynamic/special vars
 - INTERN
 - FOR
-- (def a/b) should not create #'user/a/b, lol.
 - multi-form defn: (defn x ([a] ...) ([a b] ...))
-- seqs
 - atoms (actually multithreaded), refs, agents
 - rest of the clojure core API (maybe even in clojure.core ns)
 - clojure-ish IO libraries which expose async IO
 - defprotocol -- looks important! ISeq, ISeqable, ISequential and what have
   you.
 - metadata on all collections (not just symbols)
+
+vim: set cc=80:
