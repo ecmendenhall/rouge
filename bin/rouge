@@ -1,2 +1,6 @@
-#!/bin/sh
-ruby -I"`dirname $0`/../lib" -rrouge -e'Rouge.repl(ARGV)' -- "$@"
+#!/usr/bin/env ruby
+# The Rouge REPL/interpreter.
+
+$: << "#{File.dirname(__FILE__)}/../lib"
+require 'rouge'
+Rouge.repl(ARGV)
