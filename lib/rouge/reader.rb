@@ -164,7 +164,7 @@ class Rouge::Reader
   def syntaxquotation
     consume
     @gensyms.unshift(@@gensym_counter += 1)
-    r = dequote lex
+    r = dequote(lex)
     @gensyms.shift
     r
   end
@@ -181,7 +181,7 @@ class Rouge::Reader
 
   def dequote form
     case form
-    when Rouge::Seq::Cons, Array
+    when Rouge::Seq::ISeq, Array
       rest = []
       group = []
       form.each do |f|
@@ -233,7 +233,7 @@ class Rouge::Reader
         begin
           var = @ns[form.name]
           Rouge::Seq::Cons[Rouge::Symbol[:quote],
-                      Rouge::Symbol[var.name]]
+                      Rouge::Symbol[:"#{var.ns}/#{var.name}"]]
         rescue Rouge::Namespace::VarNotFoundError
           Rouge::Seq::Cons[Rouge::Symbol[:quote],
                       Rouge::Symbol[:"#{@ns.name}/#{form.name}"]]

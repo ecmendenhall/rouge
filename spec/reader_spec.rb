@@ -289,12 +289,18 @@ describe Rouge::Reader do
 
       context "dequoting within cons lists" do
         it { @ns.read('`(a ~b)').should eq @ns.read("(list 'user.spec/a b)") }
+
         it { @ns.read('`(a ~(b `(c ~d)))').
             should eq @ns.read("(list 'user.spec/a (b " \
                                "(list 'user.spec/c d)))") }
+
+        # Should the below include 'rouge.builtin/quote as it does?
+        # Or should that be 'quote?  Clojure reads it so.
         it { @ns.read('`(a `(b ~c))').
             should eq @ns.read("(list 'user.spec/a (list 'user.spec/list " \
-                               "(list 'quote 'user.spec/b) 'user.spec/c))") }
+                               "(list 'rouge.builtin/quote 'user.spec/b) " \
+                               "'user.spec/c))") }
+
         it { @ns.read('`~`(x)').should eq @ns.read("(list 'user.spec/x)") }
       end
 
