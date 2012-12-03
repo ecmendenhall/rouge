@@ -375,6 +375,18 @@
        {:passed @*tests-passed*
         :failed @*tests-failed*})))
 
+(defn check-code [check]
+  (if (and (seq? check)
+           (= (first check) '=)
+           (= (count check) 3))
+    (let [[_ l r] check]
+      `(let [l# ~l
+             r# ~r]
+         (if (= l# r#)
+           {:result true}
+           {:result false, :error `(~'~'= ~r# ~'~r)})))
+    {:error nil, :result check}))
+
 (defn format-actual [check]
   (if (and (seq? check)
            (= (first check) 'not)
@@ -384,16 +396,16 @@
 
 (defmacro is [check]
   `(let [result# (try
-                  {:error nil, :result ~check}
+                  ~(check-code check)
                   (catch Exception e#
                     {:error e#, :result false}))]
-     (if (not (get result# :result))
+     (if (not (:result result#))
       (do
         (swap! *tests-failed* conj (conj *test-level* (pr-str '~check)))
         (puts "FAIL in ???")
         (puts "expected: " ~(pr-str check))
         (let [actual#
-                (let [error# (get result# :error)]
+                (let [error# (:error result#)]
                   (if error#
                     error#
                     (format-actual '~check)))]
