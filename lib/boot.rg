@@ -358,6 +358,11 @@
 (defn re-pattern [s]
   (.compile Regexp s))
 
+(defn sort-by [keyfn coll]
+  (-> coll
+      .to_a
+      (.sort_by | keyfn)))
+
 (ns rouge.test
   (:use rouge.core ruby))
 
