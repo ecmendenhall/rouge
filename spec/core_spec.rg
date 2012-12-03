@@ -63,6 +63,9 @@
   (is (= '(do x) (macroexpand '(sample-1 x))))
   (is (= '(do x y x y) (macroexpand '(sample-2 (x y))))))
 
+(testing "."
+  (is (= '(.send 1 :y 2) (macroexpand '(. 1 y 2)))))
+
 #_(testing "var passing"
   (is (= #'my-var (do
                     (def my-var 4)
