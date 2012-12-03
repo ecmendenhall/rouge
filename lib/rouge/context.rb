@@ -166,9 +166,11 @@ class Rouge::Context
           block = eval args[index + 1]
         else
           # Inline block.
-          block = eval(Rouge::Seq::Cons[Rouge::Symbol[:fn],
-                                   args[index + 1],
-                                   *args[index + 2..-1]])
+          block = eval(Rouge::Seq::Cons[
+            Rouge::Symbol[:fn],
+            args[index + 1],
+            *args[index + 2..-1]
+          ])
         end
         args = args[0...index]
       else
@@ -178,7 +180,29 @@ class Rouge::Context
       args = args.map {|f| eval(f)}
 
       backtrace_fix("(rouge):?:lambda: ", form) do
-        fun.call *args, &block
+        num_args = args.length
+        case fun
+        when Symbol
+          if num_args == 1 || num_args == 2
+            default = args[1]
+            if args[0].is_a? Hash
+              args[0].fetch(fun) { default }
+            else
+              default
+            end
+          else
+            raise ArgumentError.new "Wrong number of args (#{num_args}) passed to ruby/Symbol :#{fun}"
+          end
+        when Hash
+          if num_args == 1 || num_args == 2
+            default = args[1]
+            fun.fetch(args[0]) { default }
+          else
+            raise ArgumentError.new "Wrong number of args (#{num_args}) passed to ruby/Hash"
+          end
+        else
+          fun.call *args, &block
+        end
       end
     end
   end
