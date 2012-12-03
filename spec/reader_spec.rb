@@ -39,379 +39,369 @@ describe Rouge::Reader do
       it { @ns.read("-0333").should eq(-219) }
     end
 
-    it "should fail on invalid numbers" do
-      lambda { @ns.read("1.2.3") }.should raise_exception(Rouge::Reader::UnexpectedCharacterError)
-      lambda { @ns.read("12..") }.should raise_exception(Rouge::Reader::UnexpectedCharacterError)
+    context "bad numbers" do
+      it { expect { @ns.read("1.2.3")
+                  }.to raise_exception Rouge::Reader::UnexpectedCharacterError }
+
+      it { expect { @ns.read("12..")
+                  }.to raise_exception Rouge::Reader::UnexpectedCharacterError }
     end
   end
 
-  it "should read symbols" do
-    @ns.read("loki").should eq Rouge::Symbol[:loki]
-    @ns.read("wah?").should eq Rouge::Symbol[:wah?]
-    @ns.read("!ruby!").should eq Rouge::Symbol[:"!ruby!"]
-    @ns.read("nil").should eq Rouge::Symbol[:nil]
-    @ns.read("nil").should eq nil
-    @ns.read("true").should eq Rouge::Symbol[:true]
-    @ns.read("true").should eq true
-    @ns.read("false").should eq Rouge::Symbol[:false]
-    @ns.read("false").should eq false
-    @ns.read("&").should eq Rouge::Symbol[:&]
-    @ns.read("*").should eq Rouge::Symbol[:*]
-    @ns.read("-").should eq Rouge::Symbol[:-]
-    @ns.read("+").should eq Rouge::Symbol[:+]
-    @ns.read("/").should eq Rouge::Symbol[:/]
-    @ns.read("|").should eq Rouge::Symbol[:|]
-    @ns.read("$").should eq Rouge::Symbol[:"$"]
-    @ns.read(".").should eq Rouge::Symbol[:"."]
-    @ns.read(".[]").should eq Rouge::Symbol[:".[]"]
-    @ns.read("=").should eq Rouge::Symbol[:"="]
-    @ns.read("%").should eq Rouge::Symbol[:"%"]
-    @ns.read(">").should eq Rouge::Symbol[:">"]
-    @ns.read("<").should eq Rouge::Symbol[:"<"]
-    @ns.read("%50").should eq Rouge::Symbol[:"%50"]
-    @ns.read("xyz#").should eq Rouge::Symbol[:"xyz#"]
+  describe "symbols" do
+    it { @ns.read("loki").should eq Rouge::Symbol[:loki] }
+    it { @ns.read("wah?").should eq Rouge::Symbol[:wah?] }
+    it { @ns.read("!ruby!").should eq Rouge::Symbol[:"!ruby!"] }
+    it { @ns.read("nil").should eq Rouge::Symbol[:nil] }
+    it { @ns.read("nil").should eq nil }
+    it { @ns.read("true").should eq Rouge::Symbol[:true] }
+    it { @ns.read("true").should eq true }
+    it { @ns.read("false").should eq Rouge::Symbol[:false] }
+    it { @ns.read("false").should eq false }
+    it { @ns.read("&").should eq Rouge::Symbol[:&] }
+    it { @ns.read("*").should eq Rouge::Symbol[:*] }
+    it { @ns.read("-").should eq Rouge::Symbol[:-] }
+    it { @ns.read("+").should eq Rouge::Symbol[:+] }
+    it { @ns.read("/").should eq Rouge::Symbol[:/] }
+    it { @ns.read("|").should eq Rouge::Symbol[:|] }
+    it { @ns.read("$").should eq Rouge::Symbol[:"$"] }
+    it { @ns.read(".").should eq Rouge::Symbol[:"."] }
+    it { @ns.read(".[]").should eq Rouge::Symbol[:".[]"] }
+    it { @ns.read("=").should eq Rouge::Symbol[:"="] }
+    it { @ns.read("%").should eq Rouge::Symbol[:"%"] }
+    it { @ns.read(">").should eq Rouge::Symbol[:">"] }
+    it { @ns.read("<").should eq Rouge::Symbol[:"<"] }
+    it { @ns.read("%50").should eq Rouge::Symbol[:"%50"] }
+    it { @ns.read("xyz#").should eq Rouge::Symbol[:"xyz#"] }
   end
 
   describe "keywords" do
-    it "should read plain keywords" do
-      @ns.read(":loki").should eq :loki
-      @ns.read(":/").should eq :/
-      @ns.read(":wah?").should eq :wah?
-      @ns.read(":nil").should eq :nil
-      @ns.read(":true").should eq :true
-      @ns.read(":false").should eq :false
+    context "plain keywords" do
+      it { @ns.read(":loki").should eq :loki }
+      it { @ns.read(":/").should eq :/ }
+      it { @ns.read(":wah?").should eq :wah? }
+      it { @ns.read(":nil").should eq :nil }
+      it { @ns.read(":true").should eq :true }
+      it { @ns.read(":false").should eq :false }
     end
 
-    it "should read string-symbols" do
-      @ns.read(":\"!ruby!\"").should eq :"!ruby!"
+    context "string-symbols" do
+      it { @ns.read(":\"!ruby!\"").should eq :"!ruby!" }
     end
   end
 
   describe "strings" do
-    it "should read plain strings" do
-      @ns.read("\"akashi yo\"").should eq "akashi yo"
-      @ns.read("\"akashi \n woah!\"").should eq "akashi \n woah!"
+    context "plain strings" do
+      it { @ns.read("\"akashi yo\"").should eq "akashi yo" }
+      it { @ns.read("\"akashi \n woah!\"").should eq "akashi \n woah!" }
     end
 
-    it "should read escape sequences" do
-      @ns.read("\"here \\\" goes\"").should eq "here \" goes"
-      @ns.read("\"here \\\\ goes\"").should eq "here \\ goes"
-      @ns.read("\"\\a\\b\\e\\f\\n\\r\"").should eq "\a\b\e\f\n\r"
-      @ns.read("\"\\s\\t\\v\"").should eq "\s\t\v"
+    context "escape sequences" do
+      it { @ns.read("\"here \\\" goes\"").should eq "here \" goes" }
+      it { @ns.read("\"here \\\\ goes\"").should eq "here \\ goes" }
+      it { @ns.read("\"\\a\\b\\e\\f\\n\\r\"").should eq "\a\b\e\f\n\r" }
+      it { @ns.read("\"\\s\\t\\v\"").should eq "\s\t\v" }
     end
 
-    it "should read strings as frozen" do
-      @ns.read("\"bah\"").should be_frozen
+    context "read as frozen" do
+      it { @ns.read("\"bah\"").should be_frozen }
     end
   end
 
   describe "lists" do
-    it "should read the empty list" do
-      @ns.read("()").should eq Rouge::Seq::Cons[]
+    context "empty list" do
+      it { @ns.read("()").should eq Rouge::Seq::Cons[] }
     end
 
-    it "should read one-element lists" do
-      @ns.read("(tiffany)").should eq Rouge::Seq::Cons[Rouge::Symbol[:tiffany]]
-      @ns.read("(:raaaaash)").
-          should eq Rouge::Seq::Cons[:raaaaash]
+    context "one-element lists" do
+      it { @ns.read("(tiffany)").
+             should eq Rouge::Seq::Cons[Rouge::Symbol[:tiffany]] }
+      it { @ns.read("(:raaaaash)").
+             should eq Rouge::Seq::Cons[:raaaaash] }
     end
 
-    it "should read multiple-element lists" do
-      @ns.read("(1 2 3)").should eq Rouge::Seq::Cons[1, 2, 3]
-      @ns.read("(true () [] \"no\")").
-          should eq Rouge::Seq::Cons[Rouge::Symbol[:true], Rouge::Seq::Cons[], [], "no"]
+    context "multiple-element lists" do
+      it { @ns.read("(1 2 3)").should eq Rouge::Seq::Cons[1, 2, 3] }
+      it { @ns.read("(true () [] \"no\")").
+             should eq Rouge::Seq::Cons[Rouge::Symbol[:true],
+                                        Rouge::Seq::Cons[],
+                                        [],
+                                        "no"] }
     end
 
-    it "should read nested lists" do
-      @ns.read("(((3) (())) 9 ((8) (8)))").
-          should eq Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Seq::Cons[3],
-          Rouge::Seq::Cons[Rouge::Seq::Cons[]]], 9,
-          Rouge::Seq::Cons[Rouge::Seq::Cons[8], Rouge::Seq::Cons[8]]]
+    context "nested lists" do
+      it { @ns.read("(((3) (())) 9 ((8) (8)))").
+             should eq Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Seq::Cons[3],
+             Rouge::Seq::Cons[Rouge::Seq::Cons[]]], 9,
+             Rouge::Seq::Cons[Rouge::Seq::Cons[8], Rouge::Seq::Cons[8]]] }
     end
 
-    it "should read lists as frozen" do
-      @ns.read("()").should be_frozen
-      @ns.read("(1)").should be_frozen
-      @ns.read("(1 2)").should be_frozen
+    context "read as frozen" do
+      it { @ns.read("()").should be_frozen }
+      it { @ns.read("(1)").should be_frozen }
+      it { @ns.read("(1 2)").should be_frozen }
     end
   end
 
   describe "vectors" do
-    it "should read the empty vector" do
-      @ns.read("[]").should eq []
+    context "the empty vector" do
+      it { @ns.read("[]").should eq [] }
     end
 
-    it "should read one-element vectors" do
-      @ns.read("[tiffany]").should eq [Rouge::Symbol[:tiffany]]
-      @ns.read("[:raaaaash]").should eq [:raaaaash]
+    context "one-element vectors" do
+      it { @ns.read("[tiffany]").should eq [Rouge::Symbol[:tiffany]] }
+      it { @ns.read("[:raaaaash]").should eq [:raaaaash] }
     end
 
-    it "should read multiple-element vectors" do
-      @ns.read("[1 2 3]").should eq [1, 2, 3]
-      @ns.read("[true () [] \"no\"]").
-          should eq [Rouge::Symbol[:true], Rouge::Seq::Cons[], [], "no"]
+    context "multiple-element vectors" do
+      it { @ns.read("[1 2 3]").should eq [1, 2, 3] }
+      it { @ns.read("[true () [] \"no\"]").
+             should eq [Rouge::Symbol[:true], Rouge::Seq::Cons[], [], "no"] }
     end
 
-    it "should read nested vectors" do
-      @ns.read("[[[3] [[]]] 9 [[8] [8]]]").
-          should eq [[[3], [[]]], 9, [[8], [8]]]
+    context "nested vectors" do
+      it { @ns.read("[[[3] [[]]] 9 [[8] [8]]]").
+             should eq [[[3], [[]]], 9, [[8], [8]]] }
     end
 
-    it "should read vectors as frozen" do
-      @ns.read("[]").should be_frozen
-      @ns.read("[1]").should be_frozen
-      @ns.read("[1 2]").should be_frozen
+    context "read as frozen" do
+      it { @ns.read("[]").should be_frozen }
+      it { @ns.read("[1]").should be_frozen }
+      it { @ns.read("[1 2]").should be_frozen }
     end
   end
 
   describe "quotations" do
-    it "should read 'X as (QUOTE X)" do
-      @ns.read("'x").
-          should eq Rouge::Seq::Cons[Rouge::Symbol[:quote], Rouge::Symbol[:x]]
-    end
+    it { @ns.read("'x").
+           should eq Rouge::Seq::Cons[Rouge::Symbol[:quote],
+                                      Rouge::Symbol[:x]] }
 
-    it "should read ''('X) as (QUOTE (QUOTE ((QUOTE X))))" do
-      @ns.read("''('x)").
-          should eq Rouge::Seq::Cons[Rouge::Symbol[:quote],
-                    Rouge::Seq::Cons[Rouge::Symbol[:quote],
-                    Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Symbol[:quote],
-                                            Rouge::Symbol[:x]]]]]
-    end
+    it { @ns.read("''('x)").
+           should eq Rouge::Seq::Cons[Rouge::Symbol[:quote],
+                     Rouge::Seq::Cons[Rouge::Symbol[:quote],
+                     Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Symbol[:quote],
+                                             Rouge::Symbol[:x]]]]] }
   end
 
   describe "vars" do
-    it "should read #'X as (VAR X)" do
-      @ns.read("#'x").
-          should eq Rouge::Seq::Cons[Rouge::Symbol[:var], Rouge::Symbol[:x]]
-    end
+    it { @ns.read("#'x").
+           should eq Rouge::Seq::Cons[Rouge::Symbol[:var], Rouge::Symbol[:x]] }
 
-    it "should read #'#'(#'X) as (VAR (VAR ((VAR X))))" do
-      @ns.read("#'#'(#'x)").
-          should eq Rouge::Seq::Cons[Rouge::Symbol[:var],
-                    Rouge::Seq::Cons[Rouge::Symbol[:var],
-                    Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Symbol[:var],
-                                            Rouge::Symbol[:x]]]]]
-    end
+    it { @ns.read("#'#'(#'x)").
+           should eq Rouge::Seq::Cons[Rouge::Symbol[:var],
+                     Rouge::Seq::Cons[Rouge::Symbol[:var],
+                     Rouge::Seq::Cons[Rouge::Seq::Cons[Rouge::Symbol[:var],
+                                             Rouge::Symbol[:x]]]]] }
   end
 
   describe "maps" do
-    it "should read the empty map" do
-      @ns.read("{}").should eq({})
+    context "the empty map" do
+      it { @ns.read("{}").should eq({}) }
     end
 
-    it "should read one-element maps" do
-      @ns.read("{a 1}").to_s.should eq({Rouge::Symbol[:a] => 1}.to_s)
-      @ns.read("{\"quux\" [lambast]}").
-          should eq({"quux" => [Rouge::Symbol[:lambast]]})
+    context "one-element maps" do
+      it { @ns.read("{a 1}").to_s.should eq({Rouge::Symbol[:a] => 1}.to_s) }
+      it { @ns.read("{\"quux\" [lambast]}").
+             should eq({"quux" => [Rouge::Symbol[:lambast]]}) }
     end
 
-    it "should read multiple-element maps" do
-      @ns.read("{:a 1 :b 2}").should eq({:a => 1, :b => 2})
-      @ns.read("{:f :f, :y :y\n:z :z}").
-          should eq({:f => :f, :y => :y, :z => :z})
+    context "multiple-element maps" do
+      it { @ns.read("{:a 1 :b 2}").should eq({:a => 1, :b => 2}) }
+      it { @ns.read("{:f :f, :y :y\n:z :z}").
+             should eq({:f => :f, :y => :y, :z => :z}) }
     end
 
-    it "should read nested maps" do
-      @ns.read("{:a {:z 9} :b {:q q}}").should eq(
-        {:a => {:z => 9}, :b => {:q => Rouge::Symbol[:q]}})
-      @ns.read("{{9 7} 5}").should eq({{9 => 7} => 5})
+    context "nested maps" do
+      it { @ns.read("{:a {:z 9} :b {:q q}}").should eq(
+             {:a => {:z => 9}, :b => {:q => Rouge::Symbol[:q]}}) }
+      it { @ns.read("{{9 7} 5}").should eq({{9 => 7} => 5}) }
     end
 
-    it "should read maps as frozen" do
-      @ns.read("{}").should be_frozen
-      @ns.read("{:a 1}").should be_frozen
+    context "read as frozen" do
+      it { @ns.read("{}").should be_frozen }
+      it { @ns.read("{:a 1}").should be_frozen }
     end
   end
 
   describe "whitespace behaviour" do
-    it "should not fail with trailing whitespace" do
-      lambda {
-        @ns.read(":hello    \n\n\t\t  ").should eq :hello
-      }.should_not raise_exception
-    end
+    it { expect { @ns.read(":hello    \n\n\t\t  ").should eq :hello
+                }.to_not raise_exception }
 
-    it "should deal with whitespace in strange places" do
-      lambda {
-        @ns.read("[1 ]").should eq [1]
-        @ns.read(" [   2 ] ").should eq [2]
-      }.should_not raise_exception
-    end
+    it { expect { @ns.read("[1 ]").should eq [1]
+                }.to_not raise_exception }
+
+    it { expect { @ns.read("  [   2 ] ").should eq [2]
+                }.to_not raise_exception }
   end
 
   describe "empty reads" do
-    it "should fail on empty reads" do
-      lambda {
-        @ns.read("")
-      }.should raise_exception(Rouge::Reader::EndOfDataError)
+    it { expect { @ns.read("")
+                }.to raise_exception(Rouge::Reader::EndOfDataError) }
 
-      lambda {
-        @ns.read("    \n         ")
-      }.should raise_exception(Rouge::Reader::EndOfDataError)
-    end
+    it { expect { @ns.read("    \n         ")
+                }.to raise_exception(Rouge::Reader::EndOfDataError) }
   end
 
   describe "comments" do
-    it "should ignore comments" do
-      @ns.read("42 ;what!").should eq 42
-      @ns.read("[42 ;what!\n15]").should eq [42, 15]
+    it { @ns.read("42 ;what!").should eq 42 }
+    it { @ns.read("[42 ;what!\n15]").should eq [42, 15] }
 
-      lambda {
-        @ns.read(";what!")
-      }.should raise_exception(Rouge::Reader::EndOfDataError)
+    it { expect { @ns.read(";what!")
+                }.to raise_exception(Rouge::Reader::EndOfDataError) }
 
-      @ns.read(";what!\nhmm").should eq Rouge::Symbol[:hmm]
-    end
+    it { @ns.read(";what!\nhmm").should eq Rouge::Symbol[:hmm] }
   end
 
   describe "syntax-quoting" do
     describe "non-cons lists" do
-      it "should quote non-cons lists" do
-        @ns.read('`3').should eq @ns.read("'3")
-        @ns.read('`"my my my"').should eq @ns.read(%{'"my my my"})
+      context "quoting non-cons lists" do
+        it { @ns.read('`3').should eq @ns.read("'3") }
+        it { @ns.read('`"my my my"').should eq @ns.read(%{'"my my my"}) }
       end
 
-      it "should dequote within non-cons lists" do
-        @ns.read('`~3').should eq @ns.read("3")
-        @ns.read('``~3').should eq @ns.read("'3")
-        @ns.read('``~~3').should eq @ns.read("3")
+      context "dequoting within non-cons lists" do
+        it { @ns.read('`~3').should eq @ns.read("3") }
+        it { @ns.read('``~3').should eq @ns.read("'3") }
+        it { @ns.read('``~~3').should eq @ns.read("3") }
       end
 
-      it "should qualify symbols" do
-        @ns.read('`a').should eq @ns.read("'user.spec/a")
+      context "qualifying symbols" do
+        it { @ns.read('`a').should eq @ns.read("'user.spec/a") }
       end
 
-      it "should not qualify special symbols" do
-        @ns.read('`.a').should eq @ns.read("'.a")
-        @ns.read('`&').should eq @ns.read("'&")
-        @ns.read('`|').should eq @ns.read("'|")
+      context "not qualifying special symbols" do
+        it { @ns.read('`.a').should eq @ns.read("'.a") }
+        it { @ns.read('`&').should eq @ns.read("'&") }
+        it { @ns.read('`|').should eq @ns.read("'|") }
       end
     end
 
     describe "cons-lists" do
-      it "should quote cons lists" do
-        @ns.read('`(1 2)').should eq @ns.read("(list '1 '2)")
-        @ns.read('`(a b)').
-            should eq @ns.read("(list 'user.spec/a 'user.spec/b)")
+      context "quoting cons lists" do
+        it { @ns.read('`(1 2)').should eq @ns.read("(list '1 '2)") }
+        it { @ns.read('`(a b)').
+               should eq @ns.read("(list 'user.spec/a 'user.spec/b)") }
       end
 
-      it "should dequote within cons lists" do
-        @ns.read('`(a ~b)').should eq @ns.read("(list 'user.spec/a b)")
-        @ns.read('`(a ~(b `(c ~d)))').
-            should eq @ns.read("(list 'user.spec/a (b (list 'user.spec/c d)))")
-        @ns.read('`(a `(b ~c))').
+      context "dequoting within cons lists" do
+        it { @ns.read('`(a ~b)').should eq @ns.read("(list 'user.spec/a b)") }
+        it { @ns.read('`(a ~(b `(c ~d)))').
+            should eq @ns.read("(list 'user.spec/a (b " \
+                               "(list 'user.spec/c d)))") }
+        it { @ns.read('`(a `(b ~c))').
             should eq @ns.read("(list 'user.spec/a (list 'user.spec/list " \
-                               "(list 'quote 'user.spec/b) 'user.spec/c))")
-        @ns.read('`~`(x)').should eq @ns.read("(list 'user.spec/x)")
+                               "(list 'quote 'user.spec/b) 'user.spec/c))") }
+        it { @ns.read('`~`(x)').should eq @ns.read("(list 'user.spec/x)") }
       end
 
-      it "should dequote within maps" do
-        @ns.read('`{a ~b}').to_s.should eq @ns.read("{'user.spec/a b}").to_s
+      context "dequoting within maps" do
+        it { @ns.read('`{a ~b}').to_s.
+               should eq @ns.read("{'user.spec/a b}").to_s }
       end
 
-      it "should splice within seqs and vectors" do
-        @ns.read('`(a ~@b c)').
-            should eq @ns.read("(seq (concat (list 'user.spec/a) b " \
-                               "(list 'user.spec/c)))")
-        @ns.read('`(~@(a b) ~c)').
-            should eq @ns.read("(seq (concat (a b) (list c)))")
-        @ns.read('`[a ~@b c]').should eq @ns.read(<<-ROUGE)
+      context "splicing within seqs and vectors" do
+        it { @ns.read('`(a ~@b c)').
+               should eq @ns.read("(seq (concat (list 'user.spec/a) b " \
+                                  "(list 'user.spec/c)))") }
+
+        it { @ns.read('`(~@(a b) ~c)').
+               should eq @ns.read("(seq (concat (a b) (list c)))") }
+
+        it do
+          @ns.read('`[a ~@b c]').should eq @ns.read(<<-ROUGE)
             (apply vector (concat (list 'user.spec/a) b (list 'user.spec/c)))
-        ROUGE
-        @ns.read('`[~@(a b) ~c]').
-            should eq @ns.read("(apply vector (concat (a b) (list c)))")
+          ROUGE
+        end
+
+        it { @ns.read('`[~@(a b) ~c]').
+               should eq @ns.read("(apply vector (concat (a b) (list c)))") }
       end
     end
 
     describe "gensyms" do
-      it "should read as unique in each invocation" do
-        a1 = @ns.read('`a#')
-        a2 = @ns.read('`a#')
-        a1.to_s.should_not eq a2.to_s
+      context "reading as unique in each invocation" do
+        let(:a1) { @ns.read('`a#') }
+        let(:a2) { @ns.read('`a#') }
+        it { a1.to_s.should_not eq a2.to_s }
       end
 
-      it "should read identically within each invocation" do
-        as = @ns.read('`(a# a# `(a# a#))')
-        as = as
-          .map {|e| e.respond_to?(:to_a) ? e.to_a : e}.to_a.flatten
-          .flat_map {|e| e.respond_to?(:to_a) ? e.to_a : e}
-          .flat_map {|e| e.respond_to?(:to_a) ? e.to_a : e}
-          .find_all {|e|
-            e.is_a?(Rouge::Symbol) and e.name.to_s =~ /^a/
-          }
-        as.length.should eq 4
-        as[0].should eq as[1]
-        as[2].should eq as[3]
-        as[0].should_not eq as[2]
+      context "reading identically within each invocation" do
+        let(:r) do
+          @ns.read('`(a# a# `(a# a#))').
+            map {|e| e.respond_to?(:to_a) ? e.to_a : e}.to_a.flatten.
+            flat_map {|e| e.respond_to?(:to_a) ? e.to_a : e}.
+            flat_map {|e| e.respond_to?(:to_a) ? e.to_a : e}.
+            find_all {|e|
+              e.is_a?(Rouge::Symbol) and e.name.to_s =~ /^a/
+            }
+        end
+
+        it { r.should have(4).items }
+        it { r[0].should eq r[1] }
+        it { r[2].should eq r[3] }
+        it { r[0].should_not eq r[2] }
       end
     end
   end
 
   describe "anonymous functions" do
-    it "should read anonymous functions" do
-      @ns.read('#(1)').should eq @ns.read('(fn [] (1))')
-      @ns.read('#(do 1)').should eq @ns.read('(fn [] (do 1))')
-      @ns.read('#(%)').should eq @ns.read('(fn [%1] (%1))')
-      @ns.read('#(%2)').should eq @ns.read('(fn [%1 %2] (%2))')
-      @ns.read('#(%5)').should eq @ns.read('(fn [%1 %2 %3 %4 %5] (%5))')
-      @ns.read('#(%2 %)').should eq @ns.read('(fn [%1 %2] (%2 %1))')
-    end
+    it { @ns.read('#(1)').should eq @ns.read('(fn [] (1))') }
+    it { @ns.read('#(do 1)').should eq @ns.read('(fn [] (do 1))') }
+    it { @ns.read('#(%)').should eq @ns.read('(fn [%1] (%1))') }
+    it { @ns.read('#(%2)').should eq @ns.read('(fn [%1 %2] (%2))') }
+    it { @ns.read('#(%5)').should eq @ns.read('(fn [%1 %2 %3 %4 %5] (%5))') }
+    it { @ns.read('#(%2 %)').should eq @ns.read('(fn [%1 %2] (%2 %1))') }
   end
 
   describe "metadata" do
-    it "should read metadata" do
-      y = @ns.read('^{:x 1} y')
-      y.should eq Rouge::Symbol[:y]
-      y.meta.to_s.should eq({:x => 1}.to_s)
+    context "reading" do
+      subject { @ns.read('^{:x 1} y') }
+      it { should eq Rouge::Symbol[:y] }
+      its(:meta) { should eq({:x => 1}) }
     end
 
-    it "should stack metadata" do
-      y = @ns.read('^{:y 2} ^{:y 3 :z 2} y')
-      y.should eq Rouge::Symbol[:y]
-      y.meta.should include({:y => 2, :z => 2})
+    context "stacking" do
+      subject { @ns.read('^{:y 2} ^{:y 3 :z 2} y') }
+      it { should eq Rouge::Symbol[:y] }
+      its(:meta) { should include({:y => 2, :z => 2}) }
     end
 
-    it "should assign tags" do
-      y = @ns.read('^"xyz" y')
-      y.should eq Rouge::Symbol[:y]
-      y.meta.should include({:tag => "xyz"})
+    context "assigning tags" do
+      subject { @ns.read('^"xyz" y') }
+      it { should eq Rouge::Symbol[:y] }
+      its(:meta) { should include({:tag => "xyz"}) }
     end
 
-    it "should assign symbol markers" do
-      y = @ns.read('^:blargh y')
-      y.should eq Rouge::Symbol[:y]
-      y.meta.should include({:blargh => true})
+    context "assigning symbol markers" do
+      subject { @ns.read('^:blargh y') }
+      it { should eq Rouge::Symbol[:y] }
+      its(:meta) { should include({:blargh => true}) }
     end
   end
 
   describe "deref" do
-    it "should read derefs" do
-      @ns.read('@(boo)').should eq @ns.read('(rouge.core/deref (boo))')
-    end
+    it { @ns.read('@(boo)').should eq @ns.read('(rouge.core/deref (boo))') }
   end
 
   describe "multiple reading" do
-    it "should read multiple forms in turn" do
-      r = Rouge::Reader.new(@ns, "a b c")
+    let(:r) { Rouge::Reader.new(@ns, "a b c") }
+
+    it do
       r.lex.should eq Rouge::Symbol[:a]
       r.lex.should eq Rouge::Symbol[:b]
       r.lex.should eq Rouge::Symbol[:c]
 
-      lambda {
-        r.lex
-      }.should raise_exception(Rouge::Reader::EndOfDataError)
+      expect { r.lex
+             }.to raise_exception(Rouge::Reader::EndOfDataError)
     end
   end
 
   describe "the ns property" do
-    it "should return the ns the reader is in" do
-      Rouge::Reader.new(@ns, "").ns.should be @ns
-    end
+    it { Rouge::Reader.new(@ns, "").ns.should be @ns }
   end
 
   describe "the comment dispatch" do
-    it "should be completely ignored" do
-      @ns.read('#_(xyz abc) :f').should eq :f
-    end
+    it { @ns.read('#_(xyz abc) :f').should eq :f }
   end
 
   describe "regexp" do
