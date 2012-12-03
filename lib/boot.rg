@@ -108,7 +108,9 @@
     (reduce .+ args)))
 
 (defn - [a & args]
-  (reduce .- (concat (list a) args)))
+  (if (= () args)
+    (.-@ a)
+    (reduce .- (concat (list a) args))))
 
 (defn * [& args]
   (if (empty? args)

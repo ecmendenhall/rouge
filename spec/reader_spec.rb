@@ -73,6 +73,10 @@ describe Rouge::Reader do
     it { @ns.read("<").should eq Rouge::Symbol[:"<"] }
     it { @ns.read("%50").should eq Rouge::Symbol[:"%50"] }
     it { @ns.read("xyz#").should eq Rouge::Symbol[:"xyz#"] }
+    it { @ns.read("-@").should eq Rouge::Symbol[:-@] }
+    it { @ns.read(".-@").should eq Rouge::Symbol[:".-@"] }
+    it { @ns.read("+@").should eq Rouge::Symbol[:+@] }
+    it { @ns.read(".+@").should eq Rouge::Symbol[:".+@"] }
   end
 
   describe "keywords" do
