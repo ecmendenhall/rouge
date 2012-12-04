@@ -8,19 +8,14 @@ Why?
 * Quick boot time (currently around 0.1s).
 * Ruby's gems tend to be modern with decent APIs.
 
-You can try a Rouge REPL online at **[Try Rouge](http://try.rouge.io)**.
-
-Rouge is not yet mature enough to have an installer or distributions.  Just
-clone the source and run the `rouge` script to start:
+You can try a Rouge REPL online at **[Try Rouge](http://try.rouge.io)**, or install the gem to get the local REPL:
 
 ``` bash
-git clone git://github.com/unnali/rouge
-cd rouge
-bundle install
-bin/rouge
+gem install rouge-lang
+rouge
 ```
 
-You'll see the `user=>` prompt.  Enjoy!  (Expect plenty of stack traces.)
+You'll see the `user=>` prompt.  Enjoy!
 
 You can discuss on Google Groups' [rouge-talk](https://groups.google.com/forum/#!forum/rouge-talk),
 or on `#rouge` on Freenode.
@@ -54,7 +49,7 @@ salient features:
 What about in Rails?
 
 ```
-$ r c -- -I../rouge/lib -rrouge
+$ rails console -- -rrouge
 Loading development environment (Rails 3.2.6)
 1.9.3p194 :002 > Rouge::REPL.repl []
 user=> (.where ruby/Content {:id 1})
