@@ -9,7 +9,7 @@ module Rouge; end
 start = Time.now
 Rouge.define_singleton_method :start, lambda {start}
 
-class << Rouge
+module Rouge
   require 'rouge/version'
   require 'rouge/wrappers'
   require 'rouge/symbol'
@@ -19,36 +19,38 @@ class << Rouge
   require 'rouge/context'
   require 'rouge/repl'
 
-  def print(form, out)
+  def self.print(form, out)
     Rouge::Printer.print form, out
   end
 
-  def [](ns)
+  def self.[](ns)
     Rouge::Namespace[ns]
   end
 
-  def boot!
+  def self.boot!
     return if @booted
     @booted = true
 
+    builtin = Rouge[:"rouge.builtin"]
+
     core = Rouge[:"rouge.core"]
-    core.refer Rouge[:"rouge.builtin"]
+    core.refer builtin
 
     user = Rouge[:user]
-    user.refer Rouge[:"rouge.builtin"]
-    user.refer Rouge[:"rouge.core"]
+    user.refer builtin
+    user.refer core
     user.refer Rouge[:ruby]
 
     Rouge::Context.new(user).readeval(
         File.read(Rouge.relative_to_lib('boot.rg')))
   end
 
-  def repl(argv)
+  def self.repl(argv)
     boot!
     Rouge::REPL.repl(argv)
   end
 
-  def relative_to_lib name
+  def self.relative_to_lib name
     File.join(File.dirname(File.absolute_path(__FILE__)), name)
   end
 end

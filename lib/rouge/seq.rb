@@ -1,12 +1,30 @@
 # encoding: utf-8
 
+# Functions, clases and modules concerning the `seq' sequence abstraction.
 module Rouge::Seq
+  # An empty seq.
   Empty = Object.new
 
+  # A sequence consisting of a head (element) and tail (another sequence).
+  # Filled out below after ASeq's definition.
   class Cons; end
 
+  # A module purely to indicate that this is a seqable type.  Any class
+  # including ISeq should define a #seq method.
   module ISeq; end
 
+  # A partial implementation of ISeq.  You supply #first and #next, it gives:
+  #
+  #  - #cons
+  #  - #inspect
+  #  - #to_s
+  #  - #seq
+  #  - #length (#count)
+  #  - #[]
+  #  - #==
+  #  - #each
+  #  - #map
+  #  - #to_a
   module ASeq
     include ISeq
 
@@ -22,41 +40,41 @@ module Rouge::Seq
     def next; raise NotImplementedError; end
 
     def more
-      s = self.next
-      if s.nil?
+      nseq = self.next
+      if nseq.nil?
         Empty
       else
-        s
+        nseq
       end
     end
 
-    def cons(o)
-      Cons.new(o, self)
+    def cons(head)
+      Cons.new(head, self)
     end
 
     def length
-      l = 0
+      len = 0
       cursor = self
 
       while cursor != Empty
-        l += 1
+        len += 1
         cursor = cursor.more
       end
 
-      l
+      len
     end
 
     alias count length
 
-    def [](i)
-      return to_a[i] if i.is_a? Range
+    def [](idx)
+      return to_a[idx] if idx.is_a? Range
 
       cursor = self
 
-      i += self.length if i < 0
+      idx += self.length if idx < 0
 
-      while i > 0
-        i -= 1
+      while idx > 0
+        idx -= 1
         cursor = cursor.more
         return nil if cursor == Empty
       end
@@ -65,8 +83,15 @@ module Rouge::Seq
     end
 
     def ==(seq)
-      (seq.is_a?(ISeq) and self.to_a == seq.to_a) or
-        (seq.is_a?(::Array) and self.to_a == seq)
+      if seq.is_a?(ISeq)
+        return self.to_a == seq.to_a
+      end
+
+      if seq.is_a?(::Array)
+        return self.to_a == seq
+      end
+
+      false
     end
 
     def each(&block)
@@ -86,19 +111,15 @@ module Rouge::Seq
     def map(&block)
       return self.enum_for(:map) if block.nil?
 
-      r = []
-      self.each {|e| r << block.call(e)}
-      r
+      result = []
+      self.each {|elem| result << block.call(elem)}
+      result
     end
 
     def to_a
       r = []
       self.each {|e| r << e}
       r
-    end
-
-    def map(&block)
-      Cons[*to_a.map(&block)]
     end
   end
 
@@ -135,10 +156,11 @@ module Rouge::Seq
     def next; Rouge::Seq.seq @tail; end
 
     def self.[](*elements)
-      return Empty if elements.length.zero?
+      length = elements.length
+      return Empty if length.zero?
 
       head = nil
-      (elements.length - 1).downto(0).each do |i|
+      (length - 1).downto(0).each do |i|
         head = new(elements[i], head.freeze)
       end
 
@@ -148,24 +170,27 @@ module Rouge::Seq
     attr_reader :head, :tail
   end
 
+  # A seq over a Ruby Array.
   class Array
     include ASeq
 
-    def initialize(array, i)
-      @array, @i = array, i
+    def initialize(array, idx)
+      @array, @idx = array, idx
     end
 
     def first
-      @array[@i]
+      @array[@idx]
     end
 
     def next
-      if @i + 1 < @array.length
-        Array.new(@array, @i + 1)
+      if @idx + 1 < @array.length
+        Array.new(@array, @idx + 1)
       end
     end
   end
 
+  # A lazy seq; contains the body (thunk) which is a lambda to get the "real"
+  # seq.  Once evaluated (realised), the result is cached.
   class Lazy
     include ISeq
 
@@ -179,6 +204,7 @@ module Rouge::Seq
         @result
       else
         @result = Rouge::Seq.seq(@body.call) || Empty
+        @body = nil
         @realized = true
         @result
       end
@@ -196,6 +222,8 @@ module Rouge::Seq
     def to_s; seq.to_s; end
   end
 
+  # An error thrown when we try to do a seq operation on something that's not
+  # seqable.
   UnknownSeqError = Class.new(StandardError)
 
   def self.seq(form)
