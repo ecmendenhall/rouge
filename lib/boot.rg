@@ -31,7 +31,7 @@
   `(Rouge.Seq.Lazy. (fn [] ~@body)))
 
 (defn reduce [f coll]
-  (.inject (.to_a coll) | f))
+  (.inject (.to_a (seq coll)) | f))
 
 (defmacro when [cond & body]
   `(if ~cond
@@ -42,7 +42,8 @@
   (Rouge.Seq.Cons. head tail))
 
 (defn count [coll]
-  (.count coll))
+  (let [s (seq coll)]
+    (if s (.count s) 0)))
 
 (defn = [a b]
   (.== a b))
@@ -72,10 +73,11 @@
 
 (defn map [f coll]
   (lazy-seq
-    (if (empty? coll)
-      nil
-      (let [[hd & tl] coll]
-        (cons (f hd) (map f tl))))))
+    (let [s (seq coll)]
+      (if (empty? s)
+        nil
+        (let [[hd & tl] s]
+          (cons (f hd) (map f tl)))))))
 
 (defn str [& args]
   (let [args (.to_a (map .to_s args))]
@@ -93,6 +95,9 @@
 
 (defn class [object]
   (.class object))
+
+(defn class? [obj class]
+  (.is_a? obj class))
 
 (defn sequential? [coll]
   (or (.is_a? coll Rouge.Seq.ISeq)
@@ -362,6 +367,80 @@
   (-> coll
       .to_a
       (.sort_by | keyfn)))
+
+(defn to-array [coll]
+  "Returns an array of (seq coll)."
+  (.to_a (seq coll)))
+
+
+(ns ^{:doc "Implemenations of functions from clojure.string."}
+  rouge.string
+  (:use rouge.core ruby))
+
+(defn blank? [s]
+  "Returns true if s is falsy, empty, or contains only whitespace."
+  (if s
+    (if (or (= (.length s) 0)
+      true
+      (if (.all? (to-array s) | #(.match #"\s" %))
+        true
+        false))
+    false)))
+
+(defn lower-case [s]
+  "Converts the characters in string s to all lower-case."
+  (.downcase s))
+
+(defn upper-case [s]
+  "Converts the string s to all upper-case."
+  (.upcase s))
+
+(defn capitalize [s]
+  "Converts a string to all lower-case with the first character capitalized"
+  (-> s .downcase .capitalize))
+
+(defn trim [s]
+  "Removes all leading and trailing whitespace characters from the string s."
+  (.strip s))
+
+(defn ltrim [s]
+  "Removes all leading whitespace characters from the string s."
+  (.lstrip s))
+
+(defn rtrim [s]
+  "Removes all trailing whitespace characters from the string s."
+  (.rstrip s))
+
+(defn trim-newline [s]
+  "Removes all trailing newline characters from the string s."
+  (.sub s #"(\n|\r)*$" ""))
+
+(defn split [s delimiter]
+  "Splits a string s in to substrings based on delimiter. The delimiter may be
+  either another string or regular expression."
+  (.split s delimiter))
+
+(defn split-lines [s]
+  "Split the string s in to substrings at new lines."
+  (.split s #"\n|\r"))
+
+(defn join [separator coll]
+  "Returns a string in which all elements in coll are joined by the separator."
+  (.join (to-array coll) separator))
+
+(defn reverse [s]
+  "Returns the string s with it's characters in reverse order."
+  (.reverse s))
+
+;; TODO
+#_(defn escape [s cmap])
+
+;; TODO
+#_(defn replace [s match replacement])
+
+;; TODO
+#_(defn replace-first [s match replacement])
+
 
 (ns rouge.test
   (:use rouge.core ruby))

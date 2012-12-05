@@ -240,6 +240,8 @@ module Rouge::Seq
       end
     when Enumerator
       seq(form.to_a)
+    when String
+      seq(form.chars)
     else
       raise UnknownSeqError, form.inspect
     end
