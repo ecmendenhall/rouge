@@ -37,7 +37,8 @@
 (testing "seq"
   (is (.nil? (seq ())))
   (is (.nil? (seq nil)))
-  (is (.nil? (seq []))))
+  (is (.nil? (seq [])))
+  (is (.nil? (seq ""))))
 
 (testing "first"
   (is (.nil? (first nil)))
@@ -90,6 +91,7 @@
 (testing "map"
   (is (= Rouge.Seq.Lazy (class (map inc [1 2 3]))))
   (is (= '(2 3 4) (map inc [1 2 3])))
+  (is (= '("A" "B" "C") (map .upcase "abc")))
   (is (= 1
          (let [q (atom 0)
                lazy (map #(do (swap! q inc) (inc %)) [1 2 3])]
