@@ -11,6 +11,7 @@ option_parser = OptionParser.new do |opts|
 
   opts.on('-v', '--version', 'Print version number') do
     puts "Rouge #{Rouge::VERSION}"
+    exit 0
   end
 
   opts.on('-e STR', '--eval STR', 'Evaluate the contents of STR') do |str|
