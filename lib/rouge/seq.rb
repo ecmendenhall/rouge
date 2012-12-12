@@ -64,7 +64,9 @@ module Rouge::Seq
       len
     end
 
-    alias count length
+    def count
+      length
+    end
 
     def [](idx)
       return to_a[idx] if idx.is_a? Range
@@ -186,6 +188,26 @@ module Rouge::Seq
       if @idx + 1 < @array.length
         Array.new(@array, @idx + 1)
       end
+    end
+
+    def length
+      @array.length - @idx
+    end
+
+    def [](idx)
+      @array[@idx + idx]
+    end
+
+    def to_a
+      @array[@idx..-1]
+    end
+
+    def each(&block)
+      to_a.each(&block)
+    end
+
+    def map(&block)
+      to_a.map(&block)
     end
   end
 
