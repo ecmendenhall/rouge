@@ -372,6 +372,10 @@
   "Returns an array of (seq coll)."
   (.to_a (seq coll)))
 
+(defmacro cond
+  ([])
+  ([test result & rest]
+   `(if ~test ~result (cond ~@rest))))
 
 (ns ^{:doc "Implemenations of functions from clojure.string."}
   rouge.string

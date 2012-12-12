@@ -125,4 +125,30 @@
                    [hd & tl] (map #(do (swap! q inc) (inc %)) [1 2 3])]
                @q)))))
 
+(testing "cond"
+  (is (= 1 (cond
+             :else 1)))
+  (is (= 1 (cond
+             false 2
+             nil 3
+             true 1)))
+  (is (nil? (cond)))
+  (is (nil? (cond
+              false 1
+              nil 2)))
+  (is (= 1 (let [q (atom 0)]
+             (is (= :ok (cond
+                          (swap! q inc) :ok
+                          (swap! q inc) :bad
+                          (swap! q inc) :very_bad)))
+             @q)))
+  (is (= 2 (let [q (atom 0)]
+             (is (= :ok (cond
+                          (do
+                            (swap! q inc)
+                            nil) :bad
+                          (swap! q inc) :ok
+                          (swap! q inc) :very_bad)))
+             @q))))
+
 ; vim: set ft=clojure:
