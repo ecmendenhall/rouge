@@ -1,35 +1,23 @@
 # encoding: utf-8
 require 'readline'
 
-module Rouge::REPL; end
+module Rouge::REPL
 
-class << Rouge::REPL
-  def repl_error(e)
-    STDOUT.puts "!! #{e.class}: #{e.message}"
-    STDOUT.puts "#{e.backtrace.join "\n"}"
-  end
-  
-  def repl(argv)
-    context = Rouge::Context.new Rouge[:user]
+  def self.run!(options = {:backtrace => true})
+    puts "Rouge #{Rouge::VERSION}"
 
-    if ARGV == ["--time-startup"]
-      STDOUT.puts Time.now - Rouge.start
-      exit(0)
-    elsif argv.length == 1
-      f = File.read(argv[0])
-      if f[0] == ?#
-        f = f[f.index("\n") + 1..-1]
+    repl_error = lambda do |e|
+      STDOUT.puts "!! #{e.class}: #{e.message}"
+
+      if options[:backtrace]
+        STDOUT.puts "#{e.backtrace.join "\n"}"
       end
-
-      context.readeval(f)
-      exit(0)
-    elsif argv.length > 1
-      STDERR.puts "!! usage: #$0 [FILE]"
-      exit(1)
     end
 
+    context = Rouge::Context.new(Rouge[:user])
     count = 0
     chaining = false
+
     while true
       if not chaining
         prompt = "#{context.ns.name}=> "
@@ -50,15 +38,18 @@ class << Rouge::REPL
         chaining = true
         next
       rescue Rouge::Reader::UnexpectedCharacterError => reader_err
-        repl_error reader_err
+        repl_error.call reader_err
       end
 
       chaining = false
+
       begin
         form = Rouge::Compiler.compile(
           context.ns,
           Set[*context.lexical_keys],
-          form)
+          form
+        )
+
         result = context.eval(form)
 
         Rouge.print(result, STDOUT)
@@ -73,10 +64,11 @@ class << Rouge::REPL
         context = cce.context
         count = 0
       rescue => e
-        repl_error e
+        repl_error.call e
       end
     end
   end
+
 end
 
 # vim: set sw=2 et cc=80:
