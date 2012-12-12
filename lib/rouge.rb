@@ -41,13 +41,13 @@ module Rouge
     user.refer core
     user.refer Rouge[:ruby]
 
-    Rouge::Context.new(user).readeval(
-        File.read(Rouge.relative_to_lib('boot.rg')))
+    boot_rg = File.read(Rouge.relative_to_lib('boot.rg'))
+    Rouge::Context.new(user).readeval(boot_rg)
   end
 
-  def self.repl(argv)
+  def self.repl(options = {})
     boot!
-    Rouge::REPL.repl(argv)
+    Rouge::REPL.run!(options)
   end
 
   def self.relative_to_lib name

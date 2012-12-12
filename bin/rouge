@@ -1,6 +1,63 @@
 #!/usr/bin/env ruby
 # The Rouge REPL/interpreter.
-
 $: << "#{File.dirname(__FILE__)}/../lib"
 require 'rouge'
-Rouge.repl(ARGV)
+require 'optparse'
+
+options = {:backtrace => true}
+
+option_parser = OptionParser.new do |opts|
+  opts.banner = "rouge [switch] [filename]"
+
+  opts.on('-v', '--version', 'Print version number') do
+    puts "Rouge #{Rouge::VERSION}"
+  end
+
+  opts.on('-e STR', '--eval STR', 'Evaluate the contents of STR') do |str|
+    Rouge.boot!
+    Rouge::Context.new(Rouge[:user]).readeval(str)
+    exit 0
+  end
+
+  opts.on('--time-startup', 'Report boot up time') do
+    Rouge.boot!
+    puts Time.now - Rouge.start
+    exit 0
+  end
+
+  opts.on('--[no-]backtrace', 'Enable/disable backtracing in REPL') do |bool|
+    options[:backtrace] = bool
+  end
+end
+
+begin
+  option_parser.parse!
+rescue OptionParser::MissingArgument => e
+  puts "rouge: #{e}"
+end
+
+if ARGV.length == 1
+  file = ARGV[0]
+
+  if File.file?(file)
+    code = File.read(file)
+  else
+    STDERR.puts "rouge: No such file -- #{file}"
+    exit 1
+  end
+
+  # Permit shebangs at the top of the document.
+  if code[0..1] == "#!"
+    code = code[code.index("\n") + 1..-1]
+  end
+
+  Rouge.boot!
+  Rouge::Context.new(Rouge[:user]).readeval(code)
+
+  exit 0
+elsif ARGV.length > 1
+  STDERR.puts option_parser.help
+  exit 1
+end
+
+Rouge.repl(options)
