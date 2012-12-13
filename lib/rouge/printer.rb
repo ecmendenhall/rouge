@@ -53,6 +53,13 @@ module Rouge::Printer
         print(kv[1], out)
       end
       out << "}"
+    when Set
+      out << "\#{"
+      form.each_with_index do |el, i|
+        print el, out
+        out << " " unless i == (form.size - 1)
+      end
+      out << "}"
     when NilClass
       out << "nil"
     when TrueClass

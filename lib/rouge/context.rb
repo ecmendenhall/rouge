@@ -210,6 +210,18 @@ class Rouge::Context
         raise ArgumentError,
           "Wrong number of args (#{num_args}) passed to ruby/Hash"
       end
+    when Set
+      if num_args == 1
+        el = args[0]
+        if fun.include? el
+          el
+        else
+          nil
+        end
+      else
+        raise ArgumentError,
+          "Wrong number of args (#{num_args}) passed to ruby/Set"
+      end
     else
       fun.call(*args, &block)
     end

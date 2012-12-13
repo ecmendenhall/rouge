@@ -18,6 +18,7 @@ module Rouge
   require 'rouge/printer'
   require 'rouge/context'
   require 'rouge/repl'
+  require 'set'
 
   def self.print(form, out)
     Rouge::Printer.print form, out
