@@ -266,6 +266,8 @@ module Rouge::Seq
       seq(form.chars)
     when Set
       seq(form.to_a)
+    when Hash
+      seq(form.to_a)
     else
       raise UnknownSeqError, form.inspect
     end

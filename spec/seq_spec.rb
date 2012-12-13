@@ -202,6 +202,12 @@ describe Rouge::Seq do
       it { should be_an_instance_of Rouge::Seq::Array }
       it { should eq Rouge::Seq::Array.new([1, 2, 3], 0) }
     end
+
+    context Hash do
+      subject { Rouge::Seq.seq({:a => "a", :b => "b"}) }
+      it { should be_an_instance_of Rouge::Seq::Array }
+      it { should eq Rouge::Seq::Array.new([[:a, "a"], [:b, "b"]], 0) }
+    end
   end
 end
 
