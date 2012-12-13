@@ -13,7 +13,7 @@ describe Rouge::Seq::ASeq do
   describe "#seq" do
     it "should return the original object" do
      seq.seq.should be seq
-    end 
+    end
   end
 
   describe "the unimplemented methods" do
@@ -195,6 +195,12 @@ describe Rouge::Seq do
 
       let(:arrayseq) { Rouge::Seq::Array.new([:a], 0) }
       it { Rouge::Seq.seq(arrayseq).should be arrayseq }
+    end
+
+    context Set do
+      subject { Rouge::Seq.seq(Set.new([1, 2, 3])) }
+      it { should be_an_instance_of Rouge::Seq::Array }
+      it { should eq Rouge::Seq::Array.new([1, 2, 3], 0) }
     end
   end
 end
