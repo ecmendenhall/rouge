@@ -175,6 +175,32 @@ describe Rouge::Reader do
     end
   end
 
+  describe "sets" do
+    context "the empty set" do
+      it { @ns.read('#{}').should eq Set.new }
+    end
+
+    context "multiple-element sets" do
+      it { @ns.read('#{1 2 3}').should eq Set.new.add(1).add(2).add(3) }
+      it { @ns.read('#{true () [] "no"}').
+           should eq Set.new([Rouge::Symbol[:true],
+                              Rouge::Seq::Cons[],
+                              [],
+                              "no"]) }
+    end
+
+    context "nested sets" do
+      it { @ns.read('#{#{1} #{2} #{3}}').
+            should eq Set.new([Set.new([1]), Set.new([2]), Set.new([3])]) }
+    end
+
+    context "read as frozen" do
+      it { @ns.read('#{}').should be_frozen }
+      it { @ns.read('#{1}').should be_frozen }
+      it { @ns.read('#{1 2}').should be_frozen }
+    end
+  end
+
   describe "quotations" do
     it { @ns.read("'x").
            should eq Rouge::Seq::Cons[Rouge::Symbol[:quote],
