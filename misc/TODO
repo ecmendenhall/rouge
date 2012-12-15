@@ -1,5 +1,4 @@
 NEXT:
-- (count "xyz") => 3, (map … "xyz") etc.
 - (ruby/)Time/now ==> Time.now
 - continue decruft Context, shift tests to Compiler as appropriate; revise most
   specs.

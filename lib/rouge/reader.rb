@@ -16,7 +16,6 @@ class Rouge::Reader
     @gensyms = []
   end
 
-
   def lex
     r =
       case peek
@@ -247,32 +246,47 @@ class Rouge::Reader
   end
 
   def regexp
-    s = ""
-    t = '"'
-    while true
-      c = @src[@n]
+    expression = ""
+    terminator = '"'
 
-      if c.nil?
-        reader_raise EndOfDataError, "in regexp, got: #{s}"
+    while true
+      char = @src[@n]
+
+      if char.nil?
+        reader_raise EndOfDataError, "in regexp, got: #{expression}"
       end
 
       @n += 1
 
-      if c == t
+      if char == terminator
         break
       end
 
-      if c == ?\\
-        c = "\\"
-        if peek == ?"
-          c << consume
+      if char == ?\\
+        char = "\\"
+
+        # Prevent breaking early.
+        if peek == terminator
+          char << consume
         end
       end
 
-      s << c
+      expression << char
     end
 
-    Regexp.new(s).freeze
+    Regexp.new(expression).freeze
+  end
+
+  def set
+    s = Set.new
+
+    until peek == '}'
+      el = lex
+      s.add el
+    end
+
+    consume
+    s.freeze
   end
 
   def dispatch
@@ -284,6 +298,9 @@ class Rouge::Reader
           Rouge::Symbol[:fn],
           (1..count).map {|n| Rouge::Symbol[:"%#{n}"]}.freeze,
           body]
+    when "{"
+      consume
+      set
     when "'"
       consume
       Rouge::Seq::Cons[Rouge::Symbol[:var], lex]
