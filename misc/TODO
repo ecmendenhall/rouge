@@ -1,7 +1,4 @@
 NEXT:
-- (ruby/)Time/now ==> Time.now
-- continue decruft Context, shift tests to Compiler as appropriate; revise most
-  specs.
 - extend DESTRUCTURE from LET to FN, etc.
 - refactor DEFN, DEFMACRO, LET, BINDING(?) to make use of above
 - may be faster for general wrapper classes to use Struct?
@@ -10,7 +7,6 @@ miscellaeny
 -----------
 - MACROEXPAND
 - SPEED test. run core specs a few times and time.
-- everything in ::Rouge should be accessible via rouge.builtin
 - organise boot.rg
 - test the whole core
 - omit Ruby from tracebacks?
@@ -20,20 +16,22 @@ miscellaeny
 ruby interop
 ------------
 - accessing the scope/self (DSLs!)
-- proc or lambda? setting ARITY.
+- proc or lambda? setting ARITY. May need to emulate with generated code.
 - DEFN/DEFMACRO/etc. should create strict lambdas, but FN/#() should not.
     Emulate by accepting |*a| and selecting ourselves how strict we want to be.
 
 "hard" tasks
 ------------
 - have a core "apply" function which can be used by eval, defmacro, etc.
+- continue decruft Context, shift tests to Compiler as appropriate; revise most
+  specs.
 
 core lang
 ---------
 - NON-dynamic/special vars
 - INTERN
 - FOR
-- multi-form defn: (defn x ([a] ...) ([a b] ...))
+- multi-form defn: (defn x ([a] ...) ([a b] ...)) (generalise defmacro's)
 - atoms (actually multithreaded), refs, agents
 - rest of the clojure core API (maybe even in clojure.core ns)
 - clojure-ish IO libraries which expose async IO
