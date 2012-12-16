@@ -79,6 +79,10 @@ class << Rouge::Namespace
     @namespaces[ns] = new(ns)
   end
 
+  def get(ns)
+    @namespaces[ns]
+  end
+
   def []=(ns, value)
     @namespaces[ns] = value
   end

@@ -24,6 +24,19 @@ module Rouge::Compiler
         # TODO: cache found ns/var/context or no. of context parents.
         form
       else
+        if form.ns and !Rouge::Namespace.get(form.ns)
+          # ns specified but no actual namespace so-called.
+          if form.ns["/"]
+            # ns/Const/method ?
+            method = form.name
+            form = Rouge::Symbol[form.ns]
+          else
+            # Const/method ?
+            method = form.name
+            form = Rouge::Symbol[form.ns]
+          end
+        end
+
         resolved = form.ns ? Rouge[form.ns] : ns
 
         lookups = form.name_parts
@@ -40,6 +53,12 @@ module Rouge::Compiler
           klass = resolved
           klass = klass.deref if klass.is_a?(Rouge::Var)
           resolved = klass.method(:new)
+        end
+
+        if method
+          receiver = resolved
+          receiver = receiver.deref if receiver.is_a?(Rouge::Var)
+          resolved = receiver.method(method)
         end
 
         Resolved.new resolved

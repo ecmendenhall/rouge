@@ -3,134 +3,139 @@ require 'spec_helper'
 require 'rouge'
 
 describe Rouge::Compiler do
-  before do
-    @ns = Rouge[:"user.spec"].clear
-    @ns.refer Rouge[:"rouge.builtin"]
+  let(:ns) { Rouge[:"user.spec"].clear.refer(Rouge[:"rouge.builtin"]) }
 
-    @read = lambda do |input|
-      Rouge::Reader.new(@ns, input).lex
-    end
+  let(:read) { lambda {|input|
+    Rouge::Reader.new(ns, input).lex
+  } }
 
-    @compile = lambda do |input|
-      form = @read.call(input)
-      Rouge::Compiler.compile(@ns, Set.new, form)
-    end
-  end
+  let(:compile) { lambda {|input|
+    form = read.(input)
+    Rouge::Compiler.compile(ns, Set.new, form)
+  } }
 
   describe "lexical lookup" do
-    it "should compile with respect to locals" do
-      lambda {
-        @compile.call("(fn [] a)")
-      }.should raise_exception(Rouge::Namespace::VarNotFoundError)
+    it { expect { compile.("(fn [] a)")
+                }.to raise_exception(Rouge::Namespace::VarNotFoundError) }
 
-      lambda {
-        @compile.call("q")
-      }.should raise_exception(Rouge::Namespace::VarNotFoundError)
+    it { expect { compile.("q")
+                }.to raise_exception(Rouge::Namespace::VarNotFoundError) }
 
-      lambda {
-        @compile.call("(let [x 8] x)").
-            should eq @read.call("(let [x 8] x)")
-      }.should_not raise_exception
+    it { expect { compile.("(let [x 8] x)").should eq read.("(let [x 8] x)")
+                }.to_not raise_exception }
 
-      lambda {
-        @compile.call("(let [x 8] y)")
-      }.should raise_exception(Rouge::Namespace::VarNotFoundError)
+    it { expect { compile.("(let [x 8] y)")
+                }.to raise_exception(Rouge::Namespace::VarNotFoundError) }
 
-      lambda {
-        @compile.call("(let [x 8] ((fn [& b] (b)) | [e] e))")
-      }.should_not raise_exception
+    it { expect { compile.("(let [x 8] ((fn [& b] (b)) | [e] e))")
+                }.to_not raise_exception }
 
-      lambda {
-        @compile.call("(let [x 8] ((fn [& b] (b)) | [e] f))")
-      }.should raise_exception(Rouge::Namespace::VarNotFoundError)
-    end
+    it { expect { compile.("(let [x 8] ((fn [& b] (b)) | [e] f))")
+                }.to raise_exception(Rouge::Namespace::VarNotFoundError) }
   end
 
   describe "macro behaviour" do
-    it "should execute macro calls when compiling" do
-      @ns.set_here :thingy, Rouge::Macro[lambda {|f|
+    before do
+      ns.set_here(:thingy, Rouge::Macro[lambda {|f|
         Rouge::Seq::Cons[Rouge::Symbol[:list], *f.to_a]
-      }]
-      @compile.call("(let [list 'thing] (thingy (1 2 3)))").
-          should eq @read.call("(let [list 'thing] (list 1 2 3))")
+      }])
+    end
+
+    it do
+      compile.("(let [list 'thing] (thingy (1 2 3)))").
+          should eq read.("(let [list 'thing] (list 1 2 3))")
     end
   end
 
   describe "symbol lookup" do
-    it "should compile X. symbols to procs which call X.new" do
-      x = double("<class>")
+    it do
+      x = double("class")
       x.stub(:new => nil)
 
-      @ns.set_here :x, x
-      x_new = @compile.call("x.")
+      ns.set_here(:x, x)
+      x_new = compile.("x.")
       x_new.should be_an_instance_of Rouge::Compiler::Resolved
 
       x.should_receive(:new).with(1, :z)
       x_new.res.call(1, :z)
     end
 
-    it "should find the var in our namespace for an unqualified symbol" do
-      @ns.set_here :tiffany, "wha?"
-      @compile.call("tiffany").res.
-          should eq Rouge::Var.new(:"user.spec", :tiffany, "wha?")
+    context "var in context ns" do
+      before { ns.set_here(:tiffany, "wha?") }
+      it { compile.("tiffany").res.
+             should eq Rouge::Var.new(:"user.spec", :tiffany, "wha?") }
     end
 
-    it "should find the var in a referred ns for an unqualified symbol" do
-      v = @compile.call("def").res
-      v.should be_an_instance_of(Rouge::Var)
-      v.ns.should eq :"rouge.builtin"
-      v.name.should eq :def
-      v.deref.should be_an_instance_of(Rouge::Builtin)
+    context "vars in referred ns" do
+      subject { compile.("def").res }
+      it { should be_an_instance_of Rouge::Var }
+      its(:ns) { should eq :"rouge.builtin" }
+      its(:name) { should eq :def }
+      its(:deref) { should be_an_instance_of(Rouge::Builtin) }
     end
 
-    it "should find the var in any namespace for a qualified symbol" do
-      v = @compile.call("ruby/Kernel").res
-      v.should be_an_instance_of(Rouge::Var)
-      v.ns.should eq :ruby
-      v.name.should eq :Kernel
-      v.deref.should eq Kernel
+    context "var in qualified ns" do
+      subject { compile.("ruby/Kernel").res }
+      it { should be_an_instance_of Rouge::Var }
+      its(:ns) { should eq :ruby }
+      its(:name) { should eq :Kernel }
+      its(:deref) { should eq Kernel }
     end
 
-    it "should find the method for a new class instantiation" do
-      m = @compile.call("ruby/String.").res
-      m.should be_an_instance_of Method
-      m.receiver.should eq String
-      m.name.should eq :new
+    context "class instantiation" do
+      subject { compile.("ruby/String.").res }
+      it { should be_an_instance_of Method }
+      its(:receiver) { should eq String }
+      its(:name) { should eq :new }
+    end
+
+    context "static method lookup" do
+      context "implied ns" do
+        before { ns.set_here(:String, String) }
+        subject { compile.("String/new").res }
+        it { should be_an_instance_of Method }
+        its(:receiver) { should eq String }
+        its(:name) { should eq :new }
+      end
+
+      context "fully-qualified" do
+        subject { compile.("ruby/String/new").res }
+        it { should be_an_instance_of Method }
+        its(:receiver) { should eq String }
+        its(:name) { should eq :new }
+      end
     end
   end
 
   describe "sub-compilation behaviour" do
-    it "should compile Arrays and Hashes" do
-      lambda {
-        @compile.call("[a]")
-      }.should raise_exception(Rouge::Namespace::VarNotFoundError)
+    it { expect { compile.("[a]")
+                }.to raise_exception(Rouge::Namespace::VarNotFoundError) }
 
-      @ns.set_here :a, :a
-      lambda {
-        @compile.call("[a]")
-      }.should_not raise_exception
-
-      lambda {
-        @compile.call("{b c}")
-      }.should raise_exception(Rouge::Namespace::VarNotFoundError)
-
-      @ns.set_here :b, :b
-      lambda {
-        @compile.call("{b c}")
-      }.should raise_exception(Rouge::Namespace::VarNotFoundError)
-
-      @ns.set_here :c, :c
-      lambda {
-        @compile.call("{b c}")
-      }.should_not raise_exception
+    context do
+      before { ns.set_here(:a, :a) }
+      it { expect { compile.("[a]")
+                  }.to_not raise_exception }
     end
 
-    it "should compile inline blocks to fns" do
-      @compile.call("(let [a 'thing] (a | [b] b))").
-          should eq @read.call("(let [a 'thing] (a | (fn [b] b)))")
+    it { expect { compile.("{b c}")
+                }.to raise_exception(Rouge::Namespace::VarNotFoundError) }
+
+    context do
+      before { ns.set_here(:b, :b) }
+      it { expect { compile.("{b c}")
+                  }.to raise_exception(Rouge::Namespace::VarNotFoundError) }
+
+      context do
+        before { ns.set_here(:c, :c) }
+        it { expect { compile.("{b c}")
+                    }.to_not raise_exception }
+      end
     end
 
-    it { @compile.call("()").should eq Rouge::Seq::Empty }
+    it { compile.("(let [a 'thing] (a | [b] b))").
+           should eq read.("(let [a 'thing] (a | (fn [b] b)))") }
+
+    it { compile.("()").should eq Rouge::Seq::Empty }
   end
 end
 
