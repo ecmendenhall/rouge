@@ -28,6 +28,7 @@ class Rouge::Namespace
     end
 
     @refers << ns if not @refers.include? ns
+    self
   end
 
   def [](key)

@@ -46,7 +46,7 @@ describe Rouge::Namespace do
       abc = Rouge::Namespace.new :abc
       xyz = Rouge::Namespace.new :xyz
 
-      xyz.refer abc
+      xyz.refer(abc).should be xyz
 
       abc.set_here :hello, :wow
       xyz[:hello].deref.should eq :wow
