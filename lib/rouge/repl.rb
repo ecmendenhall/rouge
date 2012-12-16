@@ -39,6 +39,8 @@ module Rouge::REPL
         next
       rescue Rouge::Reader::UnexpectedCharacterError => reader_err
         repl_error.call reader_err
+      rescue Rouge::Reader::NumberFormatError => reader_err
+        repl_error.call reader_err
       end
 
       chaining = false

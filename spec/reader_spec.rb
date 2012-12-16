@@ -40,11 +40,17 @@ describe Rouge::Reader do
     end
 
     context "bad numbers" do
-      it { expect { @ns.read("1.2.3")
-                  }.to raise_exception Rouge::Reader::UnexpectedCharacterError }
+      it {
+        expect {
+          @ns.read("1.2.3")
+        }.to raise_exception Rouge::Reader::NumberFormatError
+      }
 
-      it { expect { @ns.read("12..")
-                  }.to raise_exception Rouge::Reader::UnexpectedCharacterError }
+      it {
+        expect {
+          @ns.read("12..")
+        }.to raise_exception Rouge::Reader::NumberFormatError
+      }
     end
   end
 
