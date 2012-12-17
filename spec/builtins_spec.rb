@@ -154,7 +154,7 @@ describe Rouge::Builtins do
 
     describe "storing its own name" do
       let(:fn) { context.readeval('(fn lmnop [])') }
-      
+
       it { fn.to_s.should eq :lmnop }
     end
 
@@ -251,9 +251,9 @@ describe Rouge::Builtins do
 
     describe "evaluating and returning one argument" do
       let(:subcontext) { Rouge::Context.new context }
-      
+
       before { subcontext.set_here :x, lambda {4} }
-      
+
       it { subcontext.readeval('(do (x))').should eq 4 }
     end
 
@@ -332,6 +332,12 @@ describe Rouge::Builtins do
         ROUGE
         Rouge::Namespace[:y].should be Rouge::Namespace[:moop]
       end
+
+      it "should refer rouge.core and ruby" do
+        context.readeval "(ns toast)"
+        Rouge[:toast].refers.should include(Rouge[:"rouge.core"])
+        Rouge[:toast].refers.should include(Rouge[:"ruby"])
+      end
     end
 
     it "should compile without compiling any of its components" do
@@ -353,7 +359,7 @@ describe Rouge::Builtins do
 
       describe "after readeval (def ...)" do
         before { context.readeval("(def b 'c)") }
-        
+
       it { expect { context.readeval("(defmacro a [] b)")
                   }.to_not raise_exception }
       end
@@ -405,7 +411,7 @@ describe Rouge::Builtins do
       end
 
       it "should compile multi-arg form with names bound" do
-        # TODO: consider breaking out these two test assertion 
+        # TODO: consider breaking out these two test assertion
         #   blocks into their own context: they actually both fail
         #   in isolation but those failures are masked because
         #   the "Rouge::Builtins._compile_defmacro" test passes,
@@ -418,13 +424,13 @@ describe Rouge::Builtins do
         #  lexicals.should eq Set[:f]
         #  [:a1]
         #end
-        #        
+        #
         #Rouge::Compiler.should_receive(:compile).
         #    with(ns, kind_of(Set), [:a2]) do |n, lexicals, f|
         #  lexicals.should eq Set[:g]
         #  [:a2]
         #end
-        #        
+        #
         Rouge::Builtins._compile_defmacro(
             ns, Set.new,
             Rouge::Symbol[:barge],
@@ -443,7 +449,7 @@ describe Rouge::Builtins do
   describe "apply" do
     let(:a) { lambda {|*args| args} }
     let(:subcontext) { Rouge::Context.new context }
-    
+
     before { subcontext.set_here :a, a }
 
     describe "calling a function with the argument list" do
@@ -645,7 +651,7 @@ describe Rouge::Builtins do
       let(:x) { lambda {} }
 
       before { context.set_here :x, x }
-      
+
       it { context.readeval("(destructure [a | b] [1 | x])").to_s.
              should eq({Rouge::Symbol[:a] => 1,
                         Rouge::Symbol[:b] => x}.to_s) }
@@ -674,7 +680,7 @@ describe Rouge::Builtins do
              Rouge::Builtins._compile_destructure(
                  ns, Set.new, Rouge::Symbol[:z], Rouge::Symbol[:z])
            }.to raise_exception }
-           
+
       it { expect {
              Rouge::Builtins._compile_destructure(
                  ns, Set[:y], Rouge::Symbol[:z], Rouge::Symbol[:y])

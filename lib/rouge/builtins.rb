@@ -245,7 +245,12 @@ class << Rouge::Builtins
 
   def ns(context, name, *args)
     ns = Rouge[name.name]
+    ns.refer Rouge[:"ruby"]
     ns.refer Rouge[:"rouge.builtin"]
+
+    unless name.name == :"rouge.core"
+      ns.refer Rouge[:"rouge.core"]
+    end
 
     args.each do |arg|
       kind, *params = arg.to_a
