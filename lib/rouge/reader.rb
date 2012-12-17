@@ -91,7 +91,13 @@ class Rouge::Reader
   # Retracts the current character position by n characters and returns the
   # updated character position.
   def retract! n = 1
-    @n -= n.abs
+    pos = @n - n.abs
+
+    if pos > 0
+      @n = pos
+    else
+      @n = 0
+    end
   end
 
   # Returns the character currently beneath the cursor.
@@ -116,9 +122,9 @@ class Rouge::Reader
   # Advances the cursor position beyone whitespace and comments and returns the
   # resulting character.
   def peek
-    while current_char =~ /[\s,;]/
+    while /[\s,;]/.match(current_char)
       if $& == ";"
-        while current_char =~ /[^\n]/
+        while /[^\n]/.match(current_char)
           advance!
         end
       else
@@ -136,19 +142,31 @@ class Rouge::Reader
     c
   end
 
-  def reader_raise ex, m
-    around =
-        "#{@src[[@n - 3, 0].max...[@n, 0].max]}" +
-        "#{@src[@n]}" +
-        "#{(@src[@n + 1..@n + 3] || "").gsub(/\n.*$/, '')}"
+  # Raises the exception ex with the message msg including line information
+  # where the error occured. If the optional string cause is given, a more
+  # detailed report will be displayed.
+  def reader_raise ex, msg, cause = nil
+    # Locate the beginning of the line.
+    n = @n
+    until n == 0 || @src[n - 1] == "\n"
+      n -= 1
+    end
 
-    line = @src[0...@n].count("\n") + 1
-    char = @src[0...@n].reverse.index("\n") || 0 + 1
+    lines = @src[n..-1].lines.to_a
+    line = lines.first
+    line_no = (@src.lines.to_a.index(line) || 0) + 1
 
-    raise ex,
-        "around: #{around}\n" +
-        "           ^\n" +
-        "line #{line} char #{char}: #{m}"
+    if cause
+      error_position = line.index(cause)
+      indicator = (" " * error_position) << ("^" * cause.length)
+      info = "on line #{line_no} at char #{error_position}"
+      parts = [msg, line.chomp, indicator, info]
+    else
+      info = "on line #{line_no}"
+      parts = [msg, info]
+    end
+
+    raise ex, parts.join("\n")
   end
 
   def number s = slurp(MAYBE_NUMBER)
@@ -160,7 +178,7 @@ class Rouge::Reader
         Integer(s)
       end
     else
-      reader_raise NumberFormatError, "#{s} in #read_number"
+      reader_raise NumberFormatError, "Invalid number #{s}", s
     end
   end
 
