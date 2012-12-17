@@ -200,7 +200,7 @@ class Rouge::Reader
       c = current_char
 
       if c.nil?
-        reader_raise EndOfDataError, "in string, got: #{s}"
+        reader_raise EndOfDataError, "in string, got: \"#{s}"
       end
 
       advance!
@@ -214,7 +214,7 @@ class Rouge::Reader
 
         case c
         when nil
-          reader_raise EndOfDataError, "in escaped string, got: #{s}"
+          reader_raise EndOfDataError, "in escaped string, got: \"#{s}"
         when /[abefnrstv]/
           c = {?a => ?\a,
                ?b => ?\b,
