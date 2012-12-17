@@ -3,6 +3,7 @@ require 'rouge/wrappers'
 
 class Rouge::Reader
   class UnexpectedCharacterError < StandardError; end
+  class NumberFormatError < StandardError; end
   class EndOfDataError < StandardError; end
 
   attr_accessor :ns
@@ -17,54 +18,174 @@ class Rouge::Reader
   end
 
   def lex
-    r =
-      case peek
-      when MAYBE_NUMBER
-        number
-      when /:/
-        keyword
-      when /"/
-        string
-      when /\(/
-        Rouge::Seq::Cons[*list(')')]
-      when /\[/
-        list ']'
-      when /#/
-        dispatch
-      when SYMBOL
-        # SYMBOL after \[ and #, because it includes both
-        symbol_or_number
-      when /{/
-        map
-      when /'/
-        quotation
-      when /`/
-        syntaxquotation
-      when /~/
-        dequotation
-      when /\^/
-        metadata
-      when /@/
-        deref
-      when nil
-        reader_raise EndOfDataError, "in #lex"
-      else
-        reader_raise UnexpectedCharacterError, "#{peek.inspect} in #lex"
-      end
-
-    r
+    case peek
+    when MAYBE_NUMBER
+      number
+    when /:/
+      keyword
+    when /"/
+      string
+    when /\(/
+      Rouge::Seq::Cons[*list(')')]
+    when /\[/
+      list ']'
+    when /#/
+      dispatch
+    when SYMBOL
+      # SYMBOL after \[ and #, because it includes both
+      symbol_or_number
+    when /{/
+      map
+    when /'/
+      quotation
+    when /`/
+      syntaxquotation
+    when /~/
+      dequotation
+    when /\^/
+      metadata
+    when /@/
+      deref
+    when nil
+      reader_raise EndOfDataError, "in #lex"
+    else
+      reader_raise UnexpectedCharacterError, "#{peek.inspect} in #lex"
+    end
   end
 
   private
 
-  def number
-    read_number(slurp(MAYBE_NUMBER))
+  # Loose expression for a possible numeric literal.
+  MAYBE_NUMBER = /^[+\-]?\d[\da-fA-FxX._+\-]*/
+
+  # Ruby integer.
+  INT = /\d+(?:_\d+)*/
+
+  # Strict expression for a numeric literal.
+  NUMBER = /
+  ^[+\-]?
+  (?:
+    (?:#{INT}(?:(?:\.#{INT})?(?:[eE][+\-]?#{INT})?)?) (?# Integers and floats)
+  | (?:0
+      (?:
+        (?:[xX][\da-fA-F]+) (?# Hexadecimal integer)
+      | (?:[bB][01]+) (?# Binary integer)
+      | (?:[0-7]+) (?# Octal integer)
+      )?
+    )
+  )\z
+  /ox
+
+  SYMBOL = /
+  ^(\.\[\])
+  |(\.?[-+]@)
+  |([a-zA-Z0-9\-_!&\?\*\/\.\+\|=%$<>#]+)
+  /x
+
+  # Advances the current character position by n characters and returns the
+  # updated character position.
+  def advance! n = 1
+    @n += n.abs
+  end
+
+  # Retracts the current character position by n characters and returns the
+  # updated character position.
+  def retract! n = 1
+    pos = @n - n.abs
+
+    if pos > 0
+      @n = pos
+    else
+      @n = 0
+    end
+  end
+
+  # Returns the character currently beneath the cursor.
+  def current_char
+    @src[@n]
+  end
+
+  # Returns the string of characters matching the regular expression re relative
+  # to the cursor position. The cursor position is then advanced by n characters
+  # where n is the length of the returned string.
+  def slurp re
+    re.match(@src[@n..-1])
+
+    if $&
+      advance!($&.length)
+      $&
+    else
+      reader_raise UnexpectedCharacterError, "#{current_char} in #slurp #{re}"
+    end
+  end
+
+  # Advances the cursor position beyone whitespace and comments and returns the
+  # resulting character.
+  def peek
+    while /[\s,;]/.match(current_char)
+      if $& == ";"
+        while /[^\n]/.match(current_char)
+          advance!
+        end
+      else
+        advance!
+      end
+    end
+
+    current_char
+  end
+
+  # Returns the result of peek and advances the cursor position by character.
+  def consume
+    c = peek
+    advance!
+    c
+  end
+
+  # Raises the exception ex with the message msg including line information
+  # where the error occured. If the optional string cause is given, a more
+  # detailed report will be displayed.
+  def reader_raise ex, msg, cause = nil
+    # Locate the beginning of the line.
+    n = @n
+    until n == 0 || @src[n - 1] == "\n"
+      n -= 1
+    end
+
+    lines = @src[n..-1].lines.to_a
+    line = lines.first
+    line_no = (@src.lines.to_a.index(line) || 0) + 1
+
+    if cause
+      error_position = line.index(cause)
+      indicator = (" " * error_position) << ("^" * cause.length)
+      info = "on line #{line_no} at char #{error_position}"
+      parts = [msg, line.chomp, indicator, info]
+    else
+      info = "on line #{line_no}"
+      parts = [msg, info]
+    end
+
+    raise ex, parts.join("\n")
+  end
+
+  def number s = slurp(MAYBE_NUMBER)
+    if NUMBER.match(s)
+      # Match decimal numbers but not hexadecimal numbers.
+      if /[.eE]/.match(s) && /[^xX]/.match(s)
+        Float(s)
+      else
+        Integer(s)
+      end
+    else
+      reader_raise NumberFormatError, "Invalid number #{s}", s
+    end
   end
 
   def keyword
     begin
       slurp(/:"/)
-      @n -= 1
+      retract!
       s = string
       s.intern
     rescue UnexpectedCharacterError
@@ -76,13 +197,13 @@ class Rouge::Reader
     s = ""
     t = consume
     while true
-      c = @src[@n]
+      c = current_char
 
       if c.nil?
-        reader_raise EndOfDataError, "in string, got: #{s}"
+        reader_raise EndOfDataError, "in string, got: \"#{s}"
       end
 
-      @n += 1
+      advance!
 
       if c == t
         break
@@ -93,7 +214,7 @@ class Rouge::Reader
 
         case c
         when nil
-          reader_raise EndOfDataError, "in escaped string, got: #{s}"
+          reader_raise EndOfDataError, "in escaped string, got: \"#{s}"
         when /[abefnrstv]/
           c = {?a => ?\a,
                ?b => ?\b,
@@ -109,7 +230,7 @@ class Rouge::Reader
         end
       end
 
-      s += c
+      s << c
     end
     s.freeze
   end
@@ -118,10 +239,7 @@ class Rouge::Reader
     consume
     r = []
 
-    while true
-      if peek == ending
-        break
-      end
+    until peek == ending
       r << lex
     end
 
@@ -131,8 +249,9 @@ class Rouge::Reader
 
   def symbol_or_number
     s = slurp(SYMBOL)
-    if (s[0] == ?- or s[0] == ?+) and s[1..-1] =~ NUMBER
-      read_number(s)
+
+    if MAYBE_NUMBER.match(s)
+      number(s)
     else
       Rouge::Symbol[s.intern]
     end
@@ -142,12 +261,8 @@ class Rouge::Reader
     consume
     r = {}
 
-    while true
-      if peek == '}'
-        break
-      end
-      k = lex
-      v = lex
+    until peek == '}'
+      k, v = lex, lex
       r[k] = v
     end
 
@@ -250,13 +365,13 @@ class Rouge::Reader
     terminator = '"'
 
     while true
-      char = @src[@n]
+      char = current_char
 
       if char.nil?
         reader_raise EndOfDataError, "in regexp, got: #{expression}"
       end
 
-      @n += 1
+      advance!
 
       if char == terminator
         break
@@ -282,7 +397,7 @@ class Rouge::Reader
 
     until peek == '}'
       el = lex
-      s.add el
+      s.add(el)
     end
 
     consume
@@ -376,79 +491,6 @@ class Rouge::Reader
     consume
     Rouge::Seq::Cons[Rouge::Symbol[:"rouge.core/deref"], lex]
   end
-
-  def slurp re
-    @src[@n..-1] =~ re
-    reader_raise UnexpectedCharacterError, "#{@src[@n]} in #slurp #{re}" if !$&
-    @n += $&.length
-    $&
-  end
-
-  def peek
-    while @src[@n] =~ /[\s,;]/
-      if $& == ";"
-        while @src[@n] =~ /[^\n]/
-          @n += 1
-        end
-      else
-        @n += 1
-      end
-    end
-
-    @src[@n]
-  end
-
-  def consume
-    c = peek
-    @n += 1
-    c
-  end
-
-  def reader_raise ex, m
-    around =
-        "#{@src[[@n - 3, 0].max...[@n, 0].max]}" +
-        "#{@src[@n]}" +
-        "#{(@src[@n + 1..@n + 3] || "").gsub(/\n.*$/, '')}"
-
-    line = @src[0...@n].count("\n") + 1
-    char = @src[0...@n].reverse.index("\n") || 0 + 1
-
-    raise ex,
-        "around: #{around}\n" +
-        "           ^\n" +
-        "line #{line} char #{char}: #{m}"
-  end
-
-  def read_number s
-    if NUMBER.match s
-      if s =~ /[.eE]/
-        Float(s)
-      else
-        Integer(s)
-      end
-    else
-      reader_raise UnexpectedCharacterError, "#{s} in #read_number"
-    end
-  end
-
-  # Loose expression for a possible numeric literal.
-  MAYBE_NUMBER = /^[+-]?\d[\da-fA-FxX\._+-]*/
-
-  # Ruby integer.
-  INT = /\d+(?:_\d+)*/
-
-  # Strict expression for a numeric literal.
-  NUMBER = /
-  ^[+-]?
-  (?:
-    (?:0[xX][\da-fA-F]+) (?# Hexadecimal integer)
-  | (?:0[bB][01]+) (?# Binary integer)
-  | (?:0\d+) (?# Octal integer)
-  | (?:#{INT}(?:(?:\.#{INT})?(?:[eE][+-]?#{INT})?)?) (?# Integers and floats)
-  )\z
-  /ox
-
-  SYMBOL = /^(\.\[\])|(\.?[-+]@)|([a-zA-Z0-9\-_!&\?\*\/\.\+\|=%$<>#]+)/
 end
 
 # vim: set sw=2 et cc=80:

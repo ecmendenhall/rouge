@@ -24,7 +24,7 @@ module Rouge::REPL
         input = Readline.readline(prompt, true)
       else
         prompt = "#{" " * [0, context.ns.name.length - 2].max}#_=> "
-        input += "\n" + Readline.readline(prompt, true)
+        input << "\n" + Readline.readline(prompt, true)
       end
 
       if input.nil?
@@ -38,6 +38,8 @@ module Rouge::REPL
         chaining = true
         next
       rescue Rouge::Reader::UnexpectedCharacterError => reader_err
+        repl_error.call reader_err
+      rescue Rouge::Reader::NumberFormatError => reader_err
         repl_error.call reader_err
       end
 
