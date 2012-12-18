@@ -34,7 +34,7 @@ module Rouge::REPL
 
       begin
         form = context.ns.read(input)
-      rescue Rouge::Reader::EOFError
+      rescue Rouge::Reader::EndOfDataError
         chaining = true
         next
       rescue Rouge::Reader::UnexpectedCharacterError => reader_err
