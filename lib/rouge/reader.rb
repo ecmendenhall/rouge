@@ -120,7 +120,7 @@ class Rouge::Reader
     end
   end
 
-  # Advances the cursor position beyone whitespace and comments and returns the
+  # Advances the cursor position beyond whitespace and comments and returns the
   # resulting character.
   def peek
     while /[\s,;]/.match(current_char)
@@ -217,15 +217,17 @@ class Rouge::Reader
         when nil
           reader_raise EndOfDataError, "in escaped string, got: \"#{s}"
         when /[abefnrstv]/
-          c = {?a => ?\a,
-               ?b => ?\b,
-               ?e => ?\e,
-               ?f => ?\f,
-               ?n => ?\n,
-               ?r => ?\r,
-               ?s => ?\s,
-               ?t => ?\t,
-               ?v => ?\v}[c]
+          c = {
+            ?a => ?\a,
+            ?b => ?\b,
+            ?e => ?\e,
+            ?f => ?\f,
+            ?n => ?\n,
+            ?r => ?\r,
+            ?s => ?\s,
+            ?t => ?\t,
+            ?v => ?\v
+          }[c]
         else
           # Just leave it be.
         end
@@ -246,6 +248,8 @@ class Rouge::Reader
 
     consume
     r.freeze
+  rescue EOFError
+    reader_raise EndOfDataError, "in #list"
   end
 
   def symbol_or_number
@@ -269,11 +273,15 @@ class Rouge::Reader
 
     consume
     r.freeze
+  rescue EOFError
+    reader_raise EndOfDataError, "in #map"
   end
 
   def quotation
     consume
     Rouge::Seq::Cons[Rouge::Symbol[:quote], lex]
+  rescue EOFError
+    reader_raise EndOfDataError, "in #quotation"
   end
 
   def syntaxquotation
@@ -282,6 +290,8 @@ class Rouge::Reader
     r = dequote(lex)
     @gensyms.shift
     r
+  rescue EOFError
+    reader_raise EndOfDataError, "in #syntaxquotation"
   end
 
   def dequotation
@@ -292,6 +302,8 @@ class Rouge::Reader
     else
       Rouge::Dequote[lex].freeze
     end
+  rescue EOFError
+    reader_raise EndOfDataError, "in #dequotation"
   end
 
   def dequote form
@@ -402,6 +414,8 @@ class Rouge::Reader
 
     consume
     s.freeze
+  rescue EOFError
+    reader_raise EndOfDataError, "in #set"
   end
 
   def dispatch
@@ -429,6 +443,8 @@ class Rouge::Reader
     else
       reader_raise UnexpectedCharacterError, "#{peek.inspect} in #dispatch"
     end
+  rescue EOFError
+    reader_raise EndOfDataError, "in #dispatch"
   end
 
   def dispatch_rewrite_fn form, count
@@ -485,11 +501,15 @@ class Rouge::Reader
     end
 
     attach
+  rescue EOFError
+    reader_raise EndOfDataError, "in #meta"
   end
 
   def deref
     consume
     Rouge::Seq::Cons[Rouge::Symbol[:"rouge.core/deref"], lex]
+  rescue EOFError
+    reader_raise EndOfDataError, "in #deref"
   end
 end
 
