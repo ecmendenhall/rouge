@@ -5,6 +5,7 @@ class Rouge::Reader
   class UnexpectedCharacterError < StandardError; end
   class NumberFormatError < StandardError; end
   class EndOfDataError < StandardError; end
+  class EOFError < StandardError; end
 
   attr_accessor :ns
 
@@ -47,7 +48,7 @@ class Rouge::Reader
     when /@/
       deref
     when nil
-      reader_raise EndOfDataError, "in #lex"
+      reader_raise EOFError, "in #lex"
     else
       reader_raise UnexpectedCharacterError, "#{peek.inspect} in #lex"
     end
@@ -396,8 +397,7 @@ class Rouge::Reader
     s = Set.new
 
     until peek == '}'
-      el = lex
-      s.add(el)
+      s.add(lex)
     end
 
     consume
