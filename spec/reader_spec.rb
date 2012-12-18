@@ -450,19 +450,20 @@ describe Rouge::Reader do
   end
 
   describe "bad reads" do
-    it do
-      expect { @ns.read('(') }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read('{') }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read('[') }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read('"') }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read("'") }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read('`') }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read('~') }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read('@') }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read('#(') }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read('#{') }.to raise_exception(Rouge::Reader::EndOfDataError)
-      expect { @ns.read("#'") }.to raise_exception(Rouge::Reader::EndOfDataError)
-    end
+    let(:ex) { Rouge::Reader::EndOfDataError }
+    it { expect { @ns.read('(') }.to raise_exception(ex) }
+    it { expect { @ns.read('{') }.to raise_exception(ex) }
+    it { expect { @ns.read('[') }.to raise_exception(ex) }
+    it { expect { @ns.read('"') }.to raise_exception(ex) }
+    it { expect { @ns.read("'") }.to raise_exception(ex) }
+    it { expect { @ns.read('`') }.to raise_exception(ex) }
+    it { expect { @ns.read('~') }.to raise_exception(ex) }
+    it { expect { @ns.read('@') }.to raise_exception(ex) }
+    it { expect { @ns.read('#(') }.to raise_exception(ex) }
+    it { expect { @ns.read('#{') }.to raise_exception(ex) }
+    it { expect { @ns.read("#'") }.to raise_exception(ex) }
+    it { expect { @ns.read("#_") }.to raise_exception(ex) }
+    it { expect { @ns.read('#"') }.to raise_exception(ex) }
   end
 end
 
