@@ -67,7 +67,7 @@ class Rouge::Context
     while true
       begin
         form = reader.lex
-      rescue Rouge::Reader::EndOfDataError
+      rescue Rouge::Reader::EOFError
         return r
       end
 

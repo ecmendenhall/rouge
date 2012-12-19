@@ -272,10 +272,10 @@ describe Rouge::Reader do
 
   describe "empty reads" do
     it { expect { @ns.read("")
-                }.to raise_exception(Rouge::Reader::EndOfDataError) }
+                }.to raise_exception(Rouge::Reader::EOFError) }
 
     it { expect { @ns.read("    \n         ")
-                }.to raise_exception(Rouge::Reader::EndOfDataError) }
+                }.to raise_exception(Rouge::Reader::EOFError) }
   end
 
   describe "comments" do
@@ -283,7 +283,7 @@ describe Rouge::Reader do
     it { @ns.read("[42 ;what!\n15]").should eq [42, 15] }
 
     it { expect { @ns.read(";what!")
-                }.to raise_exception(Rouge::Reader::EndOfDataError) }
+                }.to raise_exception(Rouge::Reader::EOFError) }
 
     it { @ns.read(";what!\nhmm").should eq Rouge::Symbol[:hmm] }
   end
@@ -433,8 +433,7 @@ describe Rouge::Reader do
       r.lex.should eq Rouge::Symbol[:b]
       r.lex.should eq Rouge::Symbol[:c]
 
-      expect { r.lex
-             }.to raise_exception(Rouge::Reader::EndOfDataError)
+      expect { r.lex }.to raise_exception(Rouge::Reader::EOFError)
     end
   end
 
@@ -448,6 +447,23 @@ describe Rouge::Reader do
 
   describe "regexp" do
     it { @ns.read('#"abc"').should be_an_instance_of Regexp }
+  end
+
+  describe "bad reads" do
+    let(:ex) { Rouge::Reader::EndOfDataError }
+    it { expect { @ns.read('(') }.to raise_exception(ex) }
+    it { expect { @ns.read('{') }.to raise_exception(ex) }
+    it { expect { @ns.read('[') }.to raise_exception(ex) }
+    it { expect { @ns.read('"') }.to raise_exception(ex) }
+    it { expect { @ns.read("'") }.to raise_exception(ex) }
+    it { expect { @ns.read('`') }.to raise_exception(ex) }
+    it { expect { @ns.read('~') }.to raise_exception(ex) }
+    it { expect { @ns.read('@') }.to raise_exception(ex) }
+    it { expect { @ns.read('#(') }.to raise_exception(ex) }
+    it { expect { @ns.read('#{') }.to raise_exception(ex) }
+    it { expect { @ns.read("#'") }.to raise_exception(ex) }
+    it { expect { @ns.read("#_") }.to raise_exception(ex) }
+    it { expect { @ns.read('#"') }.to raise_exception(ex) }
   end
 end
 
