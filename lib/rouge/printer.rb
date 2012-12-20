@@ -8,6 +8,8 @@ module Rouge::Printer
     case form
     when Integer
       out << form.to_s
+    when Rational
+      out << "#{form.numerator}/#{form.denominator}"
     when Rouge::Symbol
       if form.ns_s
         out << form.ns_s

@@ -6,6 +6,7 @@ describe Rouge::Printer do
   describe ".print" do
     context "numbers" do
       it { Rouge.print(12755, "").should eq "12755" }
+      it { Rouge.print(Rational(1,2), "").should eq "1/2" }
     end
 
     context "symbols" do
