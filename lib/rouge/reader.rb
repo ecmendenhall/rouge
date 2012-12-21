@@ -57,14 +57,14 @@ class Rouge::Reader
   private
 
   # Loose expression for a possible numeric literal.
-  MAYBE_NUMBER = /^[+\-]?\d[\da-fA-FxX._+\-]*/
+  MAYBE_NUMBER = /^[+\-]?\d[\da-fA-FxX._+\-\/]*/
 
   # Ruby integer.
   INT = /\d+(?:_\d+)*/
 
   # Strict expression for a numeric literal.
   NUMBER = /
-  ^[+\-]?
+  [+\-]?
   (?:
     (?:#{INT}(?:(?:\.#{INT})?(?:[eE][+\-]?#{INT})?)?) (?# Integers and floats)
   | (?:0
@@ -74,8 +74,10 @@ class Rouge::Reader
       | (?:[0-7]+) (?# Octal integer)
       )?
     )
-  )\z
+  )
   /ox
+
+  RATIONAL = /#{NUMBER}\/#{NUMBER}/o
 
   SYMBOL = /
   ^(\.\[\])
@@ -171,13 +173,16 @@ class Rouge::Reader
   end
 
   def number s = slurp(MAYBE_NUMBER)
-    if NUMBER.match(s)
+    if /\A#{NUMBER}\z/o.match(s)
       # Match decimal numbers but not hexadecimal numbers.
       if /[.eE]/.match(s) && /[^xX]/.match(s)
         Float(s)
       else
         Integer(s)
       end
+    elsif /\A#{RATIONAL}\z/o.match(s)
+      numerator, denominator =  s.split("/").map {|s| number(s) }
+      Rational(numerator, denominator)
     else
       reader_raise NumberFormatError, "Invalid number #{s}", s
     end
