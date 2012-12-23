@@ -36,6 +36,7 @@ module Rouge
 
     core = Rouge[:"rouge.core"]
     core.refer builtin
+    core.set_here(:"*command-line-args*", ARGV)
 
     user = Rouge[:user]
     user.refer builtin

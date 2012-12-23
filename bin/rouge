@@ -60,8 +60,8 @@ if ARGV.include?('-')
   exit 0
 end
 
-if ARGV.length == 1
-  file = ARGV[0]
+if ARGV.length >= 1
+  file = ARGV.shift
 
   if File.file?(file)
     code = File.read(file)
@@ -77,9 +77,6 @@ if ARGV.length == 1
 
   evaluate(code)
   exit 0
-elsif ARGV.length > 1
-  STDERR.puts option_parser.help
-  exit 1
 end
 
 Rouge.repl(options)
