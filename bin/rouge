@@ -32,8 +32,9 @@ option_parser = OptionParser.new do |opts|
   end
 
   opts.on('--time-startup', 'Report boot up time') do
+    start = Time.now
     Rouge.boot!
-    puts Time.now - Rouge.start
+    puts Time.now - start
     exit 0
   end
 
