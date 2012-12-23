@@ -151,4 +151,7 @@
                           (swap! q inc) :very_bad)))
              @q))))
 
+(testing "*command-line-args*"
+  (is (= (class *command-line-args*)
+         ruby/Array)))
 ; vim: set ft=clojure:

@@ -4,11 +4,6 @@ if RUBY_VERSION < "1.9"
   STDERR.puts "Rouge will probably not run on anything less than Ruby 1.9."
 end
 
-module Rouge; end
-
-start = Time.now
-Rouge.define_singleton_method :start, lambda {start}
-
 module Rouge
   require 'rouge/version'
   require 'rouge/wrappers'
@@ -36,6 +31,7 @@ module Rouge
 
     core = Rouge[:"rouge.core"]
     core.refer builtin
+    core.set_here(:"*command-line-args*", ARGV)
 
     user = Rouge[:user]
     user.refer builtin

@@ -4,25 +4,37 @@ $: << "#{File.dirname(__FILE__)}/../lib"
 require 'rouge'
 require 'optparse'
 
+# Boots Rouge and evaluates code in a new context. Prints non-nil results if
+# print is true.
+def evaluate(code, print = false)
+  Rouge.boot!
+  res = Rouge::Context.new(Rouge[:user]).readeval(code)
+
+  if print && res
+    puts res
+  end
+end
+
 options = {:backtrace => true}
 
 option_parser = OptionParser.new do |opts|
-  opts.banner = "rouge [switch] [filename]"
+  opts.banner = "Usage: rouge [switch] [filename]"
 
   opts.on('-v', '--version', 'Print version number') do
     puts "Rouge #{Rouge::VERSION}"
     exit 0
   end
 
-  opts.on('-e STR', '--eval STR', 'Evaluate the contents of STR') do |str|
-    Rouge.boot!
-    Rouge::Context.new(Rouge[:user]).readeval(str)
+  opts.on('-e STR', '--eval STR',
+          'Evaluate expressions in STR; print non-nil results') do |str|
+    evaluate(str, true)
     exit 0
   end
 
   opts.on('--time-startup', 'Report boot up time') do
+    start = Time.now
     Rouge.boot!
-    puts Time.now - Rouge.start
+    puts Time.now - start
     exit 0
   end
 
@@ -37,8 +49,20 @@ rescue OptionParser::MissingArgument => e
   puts "rouge: #{e}"
 end
 
-if ARGV.length == 1
-  file = ARGV[0]
+# Using a standalone '-', which traditionally is the switch for indicating
+# acceptance of standard input, causes some subtle issues with the
+# OptionParser.
+if ARGV.include?('-')
+  code = ''
+  while line = STDIN.gets
+    code << line
+  end
+  evaluate(code, true)
+  exit 0
+end
+
+if ARGV.length >= 1
+  file = ARGV.shift
 
   if File.file?(file)
     code = File.read(file)
@@ -52,13 +76,8 @@ if ARGV.length == 1
     code = code[code.index("\n") + 1..-1]
   end
 
-  Rouge.boot!
-  Rouge::Context.new(Rouge[:user]).readeval(code)
-
+  evaluate(code)
   exit 0
-elsif ARGV.length > 1
-  STDERR.puts option_parser.help
-  exit 1
 end
 
 Rouge.repl(options)

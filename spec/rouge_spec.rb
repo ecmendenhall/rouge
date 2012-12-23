@@ -18,6 +18,10 @@ describe Rouge do
         @ns[:defn].should be_an_instance_of Rouge::Macro
       }.should_not raise_exception(Rouge::Context::BindingNotFoundError)
     end
+
+    it "should contain special variables" do
+      @ns[:"*command-line-args*"].should be_an_instance_of Rouge::Var
+    end
   end
 
   describe "the user namespace" do
@@ -45,7 +49,7 @@ describe Rouge do
 
         total = r[:passed] + r[:failed].length
 
-        message = 
+        message =
             "#{total} example#{total == 1 ? "" : "s"}, " +
             "#{r[:failed].length} failure#{r[:failed].length == 1 ? "" : "s"}"
 
