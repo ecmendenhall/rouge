@@ -11,7 +11,7 @@ def evaluate(code, print = false)
   res = Rouge::Context.new(Rouge[:user]).readeval(code)
 
   if print && res
-    puts res
+    puts Rouge.print(res, '')
   end
 end
 
