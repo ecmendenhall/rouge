@@ -19,7 +19,7 @@ module Rouge::REPL
     chaining = false
 
     while true
-      if not chaining
+      if !chaining
         prompt = "#{context.ns.name}=> "
         input = Readline.readline(prompt, true)
       else
@@ -34,6 +34,8 @@ module Rouge::REPL
 
       begin
         form = context.ns.read(input)
+      rescue Rouge::Reader::EOFError
+        next
       rescue Rouge::Reader::EndOfDataError
         chaining = true
         next
