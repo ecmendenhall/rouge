@@ -111,9 +111,18 @@ describe Rouge::Compiler do
     it { expect { compile.("[a]")
                 }.to raise_exception(Rouge::Namespace::VarNotFoundError) }
 
+    it { expect { compile.("\#{a}")
+                }.to raise_exception(Rouge::Namespace::VarNotFoundError) }
+
+    it { expect { compile.("(let [a 1] \#{a})")
+                }.to_not raise_exception }
+
     context do
       before { ns.set_here(:a, :a) }
       it { expect { compile.("[a]")
+                  }.to_not raise_exception }
+
+      it { expect { compile.("\#{a}")
                   }.to_not raise_exception }
     end
 

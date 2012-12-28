@@ -12,6 +12,10 @@ module Rouge::Compiler
 
   def self.compile(ns, lexicals, form)
     case form
+    when Set
+      Rouge::Seq::Cons[
+        Set.method(:new),
+        form.map {|f| compile(ns, lexicals, f)}]
     when Rouge::Symbol
       name = form.name
       is_new = (name[-1] == ?. and name.length > 1)
