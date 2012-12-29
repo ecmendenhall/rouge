@@ -16,7 +16,6 @@ module Rouge::Seq
   # A partial implementation of ISeq.  You supply #first and #next, it gives:
   #
   #  - #cons
-  #  - #inspect
   #  - #to_s
   #  - #seq
   #  - #length (#count)
@@ -28,13 +27,13 @@ module Rouge::Seq
   module ASeq
     include ISeq
 
-    def inspect
-      "(#{to_a.map(&:inspect).join " "})"
+    def to_s
+      "(#{to_a.map(&:to_s).join " "})"
     end
 
-    def to_s; inspect; end
-
-    def seq; self; end
+    def seq
+      self
+    end
 
     def first; raise NotImplementedError; end
     def next; raise NotImplementedError; end
@@ -84,13 +83,13 @@ module Rouge::Seq
       cursor.first
     end
 
-    def ==(seq)
-      if seq.is_a?(ISeq)
-        return self.to_a == seq.to_a
+    def ==(other)
+      if other.is_a?(ISeq)
+        return self.to_a == other.to_a
       end
 
-      if seq.is_a?(::Array)
-        return self.to_a == seq
+      if other.is_a?(::Array)
+        return self.to_a == other
       end
 
       false
@@ -128,8 +127,9 @@ module Rouge::Seq
   class << Empty
     include ASeq
 
-    def inspect; "()"; end
-    def to_s; inspect; end
+    def to_s
+      '()'
+    end
 
     def seq; nil; end
     def first; nil; end
@@ -145,8 +145,10 @@ module Rouge::Seq
   class Cons
     include ASeq
 
+    attr_reader :head, :tail
+
     def initialize(head, tail)
-      if tail and !tail.is_a?(ISeq)
+      if tail && !tail.is_a?(ISeq)
         raise ArgumentError,
             "tail should be an ISeq, not #{tail.inspect} (#{tail.class})"
       end
@@ -154,11 +156,27 @@ module Rouge::Seq
       @head, @tail = head, tail
     end
 
-    def first; @head; end
-    def next; Rouge::Seq.seq @tail; end
+    def first
+      @head
+    end
+
+    def next
+      Rouge::Seq.seq(@tail)
+    end
+
+    def to_s
+      if self.length == 2 && self[0] == Rouge::Symbol[:quote]
+        "'#{self[1]}"
+      elsif self.length == 2 && self[0] == Rouge::Symbol[:var]
+        "#'#{self[1]}"
+      else
+        "(#{Rouge::Printer.print_collection(self)})"
+      end
+    end
 
     def self.[](*elements)
       length = elements.length
+
       return Empty if length.zero?
 
       head = nil
@@ -168,8 +186,6 @@ module Rouge::Seq
 
       head.freeze
     end
-
-    attr_reader :head, :tail
   end
 
   # A seq over a Ruby Array.
@@ -240,8 +256,13 @@ module Rouge::Seq
       seq.send(sym, *args, &block)
     end
 
-    def inspect; seq.inspect; end
-    def to_s; seq.to_s; end
+    def inspect
+      seq.inspect
+    end
+
+    def to_s
+      seq.to_s
+    end
   end
 
   # An error thrown when we try to do a seq operation on something that's not
@@ -260,14 +281,10 @@ module Rouge::Seq
       else
         Rouge::Seq::Array.new(form, 0)
       end
-    when Enumerator
+    when Hash, Set, Enumerator
       seq(form.to_a)
     when String
       seq(form.chars)
-    when Set
-      seq(form.to_a)
-    when Hash
-      seq(form.to_a)
     else
       raise UnknownSeqError, form.inspect
     end

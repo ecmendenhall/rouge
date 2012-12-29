@@ -4,13 +4,15 @@ require 'rouge/metadata'
 class Rouge::Symbol
   include Rouge::Metadata
 
+  attr_reader :ns, :name, :ns_s, :name_s, :name_parts, :new_sym
+
   # The symbols for t/f/n are the Ruby objects themselves.
   LOOKUP = {
     :true => true,
     :false => false,
     :nil => nil,
   }
-  
+
   KNOWNS = {
     :/ => [nil, :/],
     :"./" => [nil, :"./"],
@@ -58,20 +60,20 @@ class Rouge::Symbol
   end
 
   def to_sym
-    :"#{@ns ? "#@ns/" : ""}#@name"
+    :"#{to_s}"
   end
 
   def inspect
     "Rouge::Symbol[#{to_sym.inspect}]"
   end
 
-  def to_s; inspect; end
+  def to_s
+    "#{@ns ? "#@ns/" : ""}#@name"
+  end
 
   def ==(right)
     right.is_a?(Rouge::Symbol) and right.ns == @ns and right.name == @name
   end
-
-  attr_reader :ns, :name, :ns_s, :name_s, :name_parts, :new_sym
 end
 
 # vim: set sw=2 et cc=80:

@@ -6,80 +6,49 @@ module Rouge::Printer
 
   def self.print(form, out)
     case form
-    when Integer
+    when Numeric
+      # Handles Integer, Float, Rational, and Complex instances.
       out << form.to_s
-    when Rational
-      out << "#{form.numerator}/#{form.denominator}"
-    when Rouge::Symbol
-      if form.ns_s
-        out << form.ns_s
-        out << "/"
-      end
-      out << form.name_s
-    when Symbol
-      out << form.inspect
-    when String
+    when String, TrueClass, FalseClass, NilClass
       out << form.inspect
     when Array
-      out << "["
-      form.each.with_index do |e, i|
-        out << " " unless i.zero?
-        print(e, out)
-      end
-      out << "]"
-    when Rouge::Seq::Empty
-      out << "()"
-    when Rouge::Seq::Cons
-      if form.length == 2 and form[0] == Rouge::Symbol[:quote]
-        out << "'"
-        print(form[1], out)
-      elsif form.length == 2 and form[0] == Rouge::Symbol[:var]
-        out << "#'"
-        print(form[1], out)
-      else
-        out << "("
-        form.each.with_index do |e, i|
-          out << " " unless i.zero?
-          print(e, out)
-        end
-        out << ")"
-      end
-    when Rouge::Var
-      out << "#'#{form.ns}/#{form.name}"
+      out << "[#{print_collection(form)}]"
     when Hash
-      out << "{"
-      form.each.with_index do |kv,i|
-        out << ", " unless i.zero?
-        print(kv[0], out)
-        out << " "
-        print(kv[1], out)
-      end
-      out << "}"
+      out << "{#{print_collection(form)}}"
     when Set
-      out << "\#{"
-      form.each_with_index do |el, i|
-        print el, out
-        out << " " unless i == (form.size - 1)
+      out << "\#{#{print_collection(form)}}"
+    when Regexp
+      out << "#\"#{form.source}\""
+    when Symbol
+      # Symbols containing white space are printed with the results of #inspect,
+      # otherwise they are printed with the results #to_s. This maintains an
+      # experience consistent with Clojure whenever possible while providing
+      # clarity in cases where Symbols contain white space, although this is
+      # typically uncommon.
+      if /\s/.match(form)
+        out << form.inspect
+      else
+        out << ":#{form}"
       end
-      out << "}"
-    when NilClass
-      out << "nil"
-    when TrueClass
-      out << "true"
-    when FalseClass
-      out << "false"
+    when Rouge::Builtin, Rouge::Symbol, Rouge::Var, Rouge::Seq::Empty, Rouge::Seq::Cons
+      out << form.to_s
     when Class, Module
       if form.name
         out << "ruby/#{form.name.split('::').join('.')}"
       else
         out << form.inspect
       end
-    when Rouge::Builtin
-      out << "rouge.builtin/#{form.inner.name}"
-    when Regexp
-      out << "#\"#{form.source}\""
     else
       out << form.inspect
+    end
+  end
+
+  # Prints a collection of elements using `print`.
+  def self.print_collection(collection)
+    if collection.is_a? Hash
+      collection.to_a.map {|pair| print_collection(pair) }.join(', ')
+    else
+      collection.map {|el| print(el, '') }.join(' ')
     end
   end
 end

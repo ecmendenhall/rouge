@@ -30,6 +30,11 @@ describe Rouge::Symbol do
     it { Rouge::Symbol[:boo].to_sym.should eq :boo }
     it { Rouge::Symbol[:"what/nice"].to_sym.should eq :"what/nice" }
   end
+
+  describe "#to_s" do
+    it { Rouge::Symbol[:"breakfast"].to_s.should eq "breakfast" }
+    it { Rouge::Symbol[:"breakfast/toast"].to_s.should eq "breakfast/toast" }
+  end
 end
 
 # vim: set sw=2 et cc=80:
