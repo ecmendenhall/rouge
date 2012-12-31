@@ -9,8 +9,6 @@ module Rouge::Printer
     when Numeric
       # Handles Integer, Float, Rational, and Complex instances.
       out << form.to_s
-    when String, TrueClass, FalseClass, NilClass
-      out << form.inspect
     when Array
       out << "[#{print_collection(form)}]"
     when Hash
