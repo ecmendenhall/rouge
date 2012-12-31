@@ -110,12 +110,12 @@ describe Rouge::Seq::Cons do
                   Rouge::Seq::Cons.new(3, Rouge::Seq::Empty))) }
   end
 
-  describe "#inspect" do
-    it { Rouge::Seq::Cons[].inspect.should eq "()" }
-    it { Rouge::Seq::Cons[1].inspect.should eq "(1)" }
-    it { Rouge::Seq::Cons[1, 2].inspect.should eq "(1 2)" }
-    it { Rouge::Seq::Cons[1, 2, 3].inspect.should eq "(1 2 3)" }
-    it { Rouge::Seq::Cons[1, 2, 3].tail.inspect.should eq "(2 3)" }
+  describe "#to_s" do
+    it { Rouge::Seq::Cons[].to_s.should eq "()" }
+    it { Rouge::Seq::Cons[1].to_s.should eq "(1)" }
+    it { Rouge::Seq::Cons[1, 2].to_s.should eq "(1 2)" }
+    it { Rouge::Seq::Cons[1, 2, 3].to_s.should eq "(1 2 3)" }
+    it { Rouge::Seq::Cons[1, 2, 3].tail.to_s.should eq "(2 3)" }
   end
 
   describe "the ASeq implementation" do

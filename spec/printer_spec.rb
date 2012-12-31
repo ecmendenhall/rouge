@@ -30,7 +30,9 @@ describe Rouge::Printer do
       end
 
       context "string-symbols" do
-        it { Rouge.print(:"!ruby!", "").should eq ":\"!ruby!\"" }
+        it { Rouge.print(:"!ruby!", "").should eq ":!ruby!" }
+        it { Rouge.print(:"lady-bird", "").should eq ":lady-bird" }
+        it { Rouge.print(:"bean sprouts", "").should eq ":\"bean sprouts\"" }
       end
     end
 
