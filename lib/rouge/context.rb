@@ -5,10 +5,16 @@ require 'rouge/namespace'
 class Rouge::Context
   class BindingNotFoundError < StandardError; end
   class BadBindingError < StandardError; end
+
   class ChangeContextException < Exception
-    def initialize(context); @context = context; end
     attr_reader :context
+
+    def initialize(context)
+      @context = context
+    end
   end
+
+  attr_reader :ns
 
   def initialize(parent_or_ns)
     case parent_or_ns
@@ -18,6 +24,7 @@ class Rouge::Context
       @parent = parent_or_ns
       @ns = @parent.ns
     end
+
     @table = {}
   end
 
@@ -34,7 +41,7 @@ class Rouge::Context
   end
 
   def set_here(key, value)
-    if Rouge::Symbol[key].ns != nil
+    unless Rouge::Symbol[key].ns.nil?
       raise BadBindingError, "cannot bind #{key.inspect}"
     end
 
@@ -47,8 +54,7 @@ class Rouge::Context
     elsif @parent
       @parent.set_lexical key, value
     else
-      raise BindingNotFoundError,
-          "setting #{key} to #{value.inspect}"
+      raise BindingNotFoundError, "setting #{key} to #{value.inspect}"
     end
   end
 
@@ -56,7 +62,7 @@ class Rouge::Context
     @table.keys + (@parent ? @parent.lexical_keys : [])
   end
 
-  #   This readeval post-processes the backtrace.  Accordingly, it should only
+  # This readeval post-processes the backtrace.  Accordingly, it should only
   # be called by consumers, and never by Rouge internally itself, lest it
   # catches an exception and processes the backtrace too early.
   def readeval(input)
@@ -129,8 +135,6 @@ class Rouge::Context
     end
   end
 
-  attr_reader :ns
-
   private
 
   def eval_symbol(form)
@@ -197,10 +201,9 @@ class Rouge::Context
           default
         end
       else
-        raise(
-          ArgumentError,
+        raise ArgumentError,
           "Wrong number of args (#{num_args}) passed to " \
-            "ruby/Symbol #{fun.inspect}")
+            "ruby/Symbol #{fun.inspect}"
       end
     when Hash
       if num_args == 1 || num_args == 2
@@ -244,6 +247,6 @@ class Rouge::Context
       raise e
     end
   end
-end
+end # class Rouge::Context
 
 # vim: set sw=2 et cc=80:
