@@ -21,7 +21,7 @@ module Rouge::REPL
     while true
       # Since completion is context sensitive we need update the completion proc
       # upon each iteration.
-      Readline.completion_proc = completion_proc(context.ns)
+      Readline.completion_proc = Completer.new(context.ns)
 
       if !chaining
         prompt = "#{context.ns.name}=> "
@@ -75,73 +75,184 @@ module Rouge::REPL
     end
   end
 
-  # Returns a proc intended to be used with Readline.
-  #
-  # @param [Rouge::Namespace] the current namespace
-  #
-  # @return [Proc<String>] the completion proc to be used with Readline. The
-  #   returned proc accepts a string and returns an array.
-  #
-  # @api public
-  #
-  def self.completion_proc(current_namespace)
-    return proc do |search|
-      list = []
+  module Completer
+    extend self
 
-      # Rouge namespaces. Note we do not include the rouge.builtin and ruby
-      # namespaces since we would like built in vars, such as def or let, and
-      # top level Ruby constants to be easily accessible with command line
-      # completion (see below).
-      rg_namespaces = Rouge::Namespace.all.reject do |key, _|
-        [:"rouge.builtin", :ruby].include?(key)
-      end
+    # Returns a proc intended to be used with Readline.
+    #
+    # @param [Rouge::Namespace] the current namespace
+    #
+    # @return [Proc<String>] the completion proc to be used with Readline. The
+    #   returned proc accepts a string and returns an array.
+    #
+    def new(current_namespace)
+      return lambda do |query|
+        if query.nil? || query.empty?
+          return []
+        end
 
-      if /\//.match(search)
-        namespace = search.split('/').first.to_sym
+        list = current_namespace.table.dup
+        matches = search(query)
 
-        # The ruby namespace requires special handling.
-        if /^ruby/.match(namespace)
-          list << Rouge[namespace].table.map do |constant|
-            "ruby/#{constant}"
-          end
-        else
-          lookup = rg_namespaces[namespace.to_sym]
-
-          if lookup
-            list << lookup.table.map do |var_name, _|
-              "#{namespace}/#{var_name}"
+        # If there's only one match we check if it's a namespace or a Ruby
+        # constant which contains other constants or singleton methods.
+        if matches.length == 1
+          match = matches[0]
+          if Rouge::Namespace.exists?(match)
+            if current_namespace.table.include?(match)
+              matches << "#{match}/"
+            else
+              Readline.completion_append_character = "/"
+            end
+          else
+            if locate_module(match.to_s)
+              Readline.completion_append_character = ""
             end
           end
-        end
-      else
-        # Add the current namepace, rouge.builtin, rouge.coure, and ruby tables
-        # along with the names of available namespaces in the completion list.
-        list << current_namespace.table
-        list << Rouge[:"rouge.builtin"].table.keys
-        list << Rouge[:"rouge.core"].table.keys
-        list << :ruby
-        list << Rouge[:ruby].table
-        list << rg_namespaces.keys
-      end
-
-      matches = list.flatten.grep(/^#{search}/)
-
-      # If there's only one match we check if it's a namespace. If it is we
-      # we use the solidus as the completion character, otherwise we append
-      # the namespace (including solidus) to the list.
-      if matches.length == 1 && Rouge::Namespace.exists?(matches[0])
-        match = matches[0]
-
-        if current_namespace.table.include?(match)
-          matches << "#{match}/"
         else
-          Readline.completion_append_character = "/"
+          Readline.completion_append_character = ""
+        end
+
+        matches
+      end
+    end
+
+    # Returns a list of constants and singleton method names based on the string
+    # query.
+    #
+    # @param [String] the query
+    #
+    # @return [Array<Symbol,String>] the search results
+    #
+    def search(query)
+      namespace, lookup = query.split('/', 2)
+      result =
+        case namespace
+        # The ruby namespace requires special handling.
+        when /^[A-Z]/
+          search_ruby(query)
+        when /^ruby/
+          if lookup && lookup.empty?
+            Rouge[:ruby].table.map {|x| "ruby/#{x}" }
+          else
+            search_ruby(lookup).map {|x| "ruby/#{x}" }
+          end
+        else
+          ns = rg_namespaces[namespace.to_sym]
+
+          if ns
+            ns.table.map { |var, _| "#{namespace}/#{var}" }
+          else
+            # Add the current namepace, rouge.builtin, and ruby tables along with
+            # the names of available namespaces in the completion list.
+            list = []
+            list << Rouge[:"rouge.builtin"].table.keys
+            list << :ruby
+            list << Rouge[:ruby].table
+            list << rg_namespaces.keys
+          end
+        end
+
+      result.flatten.grep(/^#{Regexp.escape(query)}/)
+    end
+
+    # Applies `locate_module` to the string query and returns a list constants
+    # and singleton methods. These results are intended to be filtered in the
+    # `search` method.
+    #
+    # @example
+    #   search_ruby("Rouge") #=> ["Rouge/[]", "Rouge/boot!", ...]
+    #   search_ruby("Rouge.") #=> ["Rouge/[]", "Rouge/boot!", ...]
+    #
+    # @param [String] the query
+    #
+    # @return [Array<Symbol,String>] the search result
+    #
+    # @see #locate_module, #search
+    #
+    def search_ruby(query)
+      namespace = query.split('/', 2).first
+
+      mod = locate_module(namespace)
+
+      if mod == Object
+        mod.constants
+      else
+        ns = mod.name.gsub('::','.')
+        result = []
+        mod.singleton_methods.each { |sm| result << "#{ns}/#{sm}" }
+        mod.constants.each { |c| result << "#{ns}.#{c}" }
+        result.flatten
+      end
+    end
+
+    # Recursively searches for a Ruby module (includes classes) given by the
+    # string query. The string should contain a Rouge style namespace name for
+    # the module.
+    #
+    # Optionally, a root module can be supplied as the context for the query.
+    # By default this is Object. If no module is found, the method returns nil
+    # or the root.
+    #
+    # Be aware this method *only* returns modules and classes.
+    #
+    # @example
+    #   locate_module("Bil.Bo") #=> Bil::Bo
+    #   locate_module("Ji.Tsu", Nin) #=> Nin::Ji::Tsu
+    #
+    # @param [String] the module (or class) to find
+    #
+    # @param [Module] the search context
+    #
+    # @return [Class,Module,nil] the search result
+    #
+    def locate_module(query, root = Object)
+      head, tail = query.split('.', 2)
+
+      return root unless rg_ruby_module?(head)
+
+      lookup = head.to_sym
+
+      if root.is_a?(Module) && root.constants.include?(lookup)
+        result = root.const_get(lookup)
+
+        return root unless result.is_a?(Module)
+
+        # `query` may have ended with '.'.
+        if tail.nil? || tail.empty?
+          result
+        else
+          locate_module(tail, result)
         end
       else
-        Readline.completion_append_character = ""
+        root
       end
+    end
 
-      matches
+    # Rouge namespaces. Note we do not include the rouge.builtin and ruby
+    # namespaces since we would like built in vars, such as def or let, and top
+    # level Ruby constants to be easily accessible with command line
+    # completion (see below).
+    #
+    # @return [Hash]
+    #
+    def rg_namespaces
+      Rouge::Namespace.all.reject do |key, _|
+        [:"rouge.builtin", :ruby].include?(key)
+      end
+    end
+
+    private
+
+    # Returns true if the string query matches a Rouge style Ruby module or
+    # constant name.
+    #
+    # @param [String]
+    #
+    # @return [Boolean]
+    #
+    def rg_ruby_module?(query)
+      !!/^([A-Z][A-Za-z_]*\.?)+$/.match(query)
     end
   end
 end
