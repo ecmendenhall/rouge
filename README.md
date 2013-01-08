@@ -1,4 +1,4 @@
-# Rouge [![Build Status](https://secure.travis-ci.org/unnali/rouge.png)](http://travis-ci.org/unnali/rouge)
+# Rouge [![Build Status](https://secure.travis-ci.org/rouge-lang/rouge.png)](http://travis-ci.org/rouge-lang/rouge)
 
 **Ruby + Clojure = Rouge.**
 
@@ -22,7 +22,7 @@ or on `#rouge` on Freenode.
 
 ## example
 
-See [boot.rg](https://github.com/unnali/rouge/blob/master/lib/boot.rg),
+See [boot.rg](https://github.com/rouge-lang/rouge/blob/master/lib/boot.rg),
 [em-rg](https://github.com/unnali/em-rg),
 [mechanize-rg](https://github.com/unnali/mechanize-rg), but to demonstrate
 salient features:
@@ -60,7 +60,7 @@ user=>
 
 ## TODO
 
-See [TODO](https://github.com/unnali/rouge/blob/master/misc/TODO), but big ones
+See [TODO](https://github.com/rouge-lang/rouge/blob/master/misc/TODO), but big ones
 include:
 
 * making seqs nicer
@@ -82,12 +82,15 @@ include:
 
 Original author: [Arlen Christian Mart Cuss](https://github.com/unnali).
 
+Committers:
+
+* [Joel Holdbrooks](https://github.com/noprompt)
+
 Unreserved thanks to the following people for their contributions.
 
 * [Russell Whitaker](https://github.com/russellwhitaker)
 * [Misha Moroshko](https://github.com/moroshko)
 * [Anthony Grimes](https://github.com/Raynes)
-* [Joel Holdbrooks](https://github.com/noprompt)
 
 ## copyright and licensing
 
