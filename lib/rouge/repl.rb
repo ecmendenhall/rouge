@@ -17,11 +17,9 @@ module Rouge::REPL
     context = Rouge::Context.new(Rouge[:user])
     count = 0
     chaining = false
+    Readline.completion_proc = Completer.new(context.ns)
 
     while true
-      # Since completion is context sensitive we need update the completion proc
-      # upon each iteration.
-      Readline.completion_proc = Completer.new(context.ns)
 
       if !chaining
         prompt = "#{context.ns.name}=> "
@@ -68,6 +66,9 @@ module Rouge::REPL
         context.set_here :"*1", result
       rescue Rouge::Context::ChangeContextException => cce
         context = cce.context
+        # Since completion is context sensitive, we need update the proc
+        # whenever it changes.
+        Readline.completion_proc = Completer.new(context.ns)
         count = 0
       rescue => e
         repl_error.call(e)
@@ -80,19 +81,23 @@ module Rouge::REPL
 
     # Returns a proc intended to be used with Readline.
     #
-    # @param [Rouge::Namespace] the current namespace
+    # @param [Rouge::Namespace] current_namespace
+    #   the current namespace
     #
-    # @return [Proc<String>] the completion proc to be used with Readline. The
+    # @return [Proc] the completion proc to be used with Readline. The
     #   returned proc accepts a string and returns an array.
     #
+    # @api public
     def new(current_namespace)
       return lambda do |query|
         if query.nil? || query.empty?
           return []
         end
 
-        list = current_namespace.table.dup
-        matches = search(query)
+        list = current_namespace.table.keys
+        list << search(query)
+
+        matches = search_list(list.flatten, query)
 
         # If there's only one match we check if it's a namespace or a Ruby
         # constant which contains other constants or singleton methods.
@@ -120,10 +125,12 @@ module Rouge::REPL
     # Returns a list of constants and singleton method names based on the string
     # query.
     #
-    # @param [String] the query
+    # @param [String] query
+    #   the search string to use
     #
     # @return [Array<Symbol,String>] the search results
     #
+    # @api public
     def search(query)
       namespace, lookup = query.split('/', 2)
       result =
@@ -153,23 +160,25 @@ module Rouge::REPL
           end
         end
 
-      result.flatten.grep(/^#{Regexp.escape(query)}/)
+      search_list(result.flatten, query)
     end
 
     # Applies `locate_module` to the string query and returns a list constants
     # and singleton methods. These results are intended to be filtered in the
     # `search` method.
     #
+    # @see Completer.locate_module, Completer.search
+    #
     # @example
     #   search_ruby("Rouge") #=> ["Rouge/[]", "Rouge/boot!", ...]
     #   search_ruby("Rouge.") #=> ["Rouge/[]", "Rouge/boot!", ...]
     #
-    # @param [String] the query
+    # @param [String] query
+    #   the search string to use
     #
     # @return [Array<Symbol,String>] the search result
     #
-    # @see #locate_module, #search
-    #
+    # @api public
     def search_ruby(query)
       namespace = query.split('/', 2).first
 
@@ -200,12 +209,15 @@ module Rouge::REPL
     #   locate_module("Bil.Bo") #=> Bil::Bo
     #   locate_module("Ji.Tsu", Nin) #=> Nin::Ji::Tsu
     #
-    # @param [String] the module (or class) to find
+    # @param [String] query
+    #   the module (or class) to find
     #
-    # @param [Module] the search context
+    # @param [Module] root
+    #   the optional search context
     #
     # @return [Class,Module,nil] the search result
     #
+    # @api public
     def locate_module(query, root = Object)
       head, tail = query.split('.', 2)
 
@@ -232,10 +244,11 @@ module Rouge::REPL
     # Rouge namespaces. Note we do not include the rouge.builtin and ruby
     # namespaces since we would like built in vars, such as def or let, and top
     # level Ruby constants to be easily accessible with command line
-    # completion (see below).
+    # completion.
     #
-    # @return [Hash]
+    # @return [Hash] the filtered namespaces
     #
+    # @api public
     def rg_namespaces
       Rouge::Namespace.all.reject do |key, _|
         [:"rouge.builtin", :ruby].include?(key)
@@ -247,12 +260,29 @@ module Rouge::REPL
     # Returns true if the string query matches a Rouge style Ruby module or
     # constant name.
     #
-    # @param [String]
+    # @param [String] query
+    #   the query string to match.
     #
     # @return [Boolean]
     #
+    # @api private
     def rg_ruby_module?(query)
-      !!/^([A-Z][A-Za-z_]*\.?)+$/.match(query)
+      !!/^(?:[A-Z][A-Za-z_]*\.?)+$/.match(query)
+    end
+
+    # Filters a list of items based on a string query.
+    #
+    # @param [Array] list
+    #   the list to filter.
+    #
+    # @param [String] query
+    #   the search string to use.
+    #
+    # @return [Array]
+    #
+    # @api private
+    def search_list(list, query)
+      list.grep(/^#{Regexp.escape(query)}/)
     end
   end
 end

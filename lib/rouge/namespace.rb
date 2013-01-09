@@ -77,19 +77,17 @@ class Rouge::Namespace
   # @return [Hash]
   #
   # @api public
-  #
   def self.all
     @namespaces
   end
 
   # Returns true if the given namespace ns exists, false otherwise.
   #
-  # @param [Symbol] the namespace to check for
+  # @param [Symbol] ns the namespace to check for
   #
   # @return [Boolean]
   #
   # @api public
-  #
   def self.exists?(ns)
     @namespaces.include?(ns)
   end

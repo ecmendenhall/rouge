@@ -41,7 +41,7 @@ class Rouge::Context
   end
 
   def set_here(key, value)
-    unless Rouge::Symbol[key].ns.nil?
+    if Rouge::Symbol[key].ns != nil
       raise BadBindingError, "cannot bind #{key.inspect}"
     end
 
