@@ -4,7 +4,8 @@ require 'rouge'
 
 describe Rouge::REPL do
   describe "comp" do
-    let(:ns) { Rouge[:user].clear }
+    let(:user) { Rouge[:user].clear }
+    let(:food) { Rouge[:food].clear }
     let(:comp) { Rouge::REPL::Completer }
     let(:fake_class_a) { Class.new }
     let(:fake_class_b) { Class.new }
@@ -14,13 +15,16 @@ describe Rouge::REPL do
       stub_const("Corn::Bread", fake_class_b)
       fake_class_a.define_singleton_method(:pop) {}
       fake_class_b.define_singleton_method(:toast) {}
-      ns.set_here(:pop, "corn")
+      user.set_here(:pop, "corn")
+      food.set_here(:scrambled, "eggs")
+      user.refer(food)
     }
 
     context "#new" do
-      let(:comp) { Rouge::REPL::Completer.new(ns) }
+      let(:comp) { Rouge::REPL::Completer.new(user) }
       it { comp.call("u").should include(:user) }
       it { comp.call("p").should include(:pop) }
+      it { comp.call("s").should include(:scrambled) }
       it { comp.call("Rouge").should include("Rouge.VERSION") }
       it { comp.call("ruby/").should include("ruby/RUBY_VERSION") }
       it { comp.call("ruby/Rouge.").should include("ruby/Rouge.VERSION") }

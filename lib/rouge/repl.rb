@@ -94,7 +94,7 @@ module Rouge::REPL
           return []
         end
 
-        list = current_namespace.table.keys
+        list = namespace_items(current_namespace)
         list << search(query)
 
         matches = search_list(list.flatten, query)
@@ -255,7 +255,35 @@ module Rouge::REPL
       end
     end
 
+    # Returns true if the provided namespace is included in `rg_namespaces`.
+    #
+    # @see Rouge::REPL::Completer.rg_namespaces
+    #
+    # @param [Rouge::Namespace] x
+    #   the namespace to test
+    #
+    # @return [Boolean]
+    #
+    # @api public
+    def rg_namespace?(x)
+      x.is_a?(Rouge::Namespace) && rg_namespaces.keys.include?(x.name)
+    end
+
     private
+
+    # Returns a list of table keys and refer keys based on the given namespace.
+    #
+    # @param [Rouge::Namespace] ns
+    #   the namespace to use
+    #
+    # @return [Array<Symbol>]
+    #
+    # @api public
+    def namespace_items(ns)
+      list = ns.table.keys
+      refers = ns.refers.select { |ns| rg_namespace?(ns) }
+      list << refers.map { |ns| ns.table.keys }
+    end
 
     # Returns true if the string query matches a Rouge style Ruby module or
     # constant name.
@@ -266,8 +294,8 @@ module Rouge::REPL
     # @return [Boolean]
     #
     # @api private
-    def rg_ruby_module?(query)
-      !!/^(?:[A-Z][A-Za-z_]*\.?)+$/.match(query)
+    def rg_ruby_module?(x)
+      !!/^(?:[A-Z][A-Za-z_]*\.?)+$/.match(x)
     end
 
     # Filters a list of items based on a string query.
