@@ -126,7 +126,7 @@
   (reduce ./ (concat (list a) args)))
 
 (defn require [lib]
-  (.require Kernel lib))
+  (.send Object :require lib))
 
 (defn range [from til]
   ; XXX this will blow so many stacks
