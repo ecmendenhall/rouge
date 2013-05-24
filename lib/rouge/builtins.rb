@@ -263,7 +263,7 @@ class << Rouge::Builtins
       when :require
         params.each do |param|
           if param.is_a? Rouge::Symbol
-            Object.send.require param.name.to_s
+            Object.send :require, param.name.to_s
           elsif param.is_a? Array and
                 param.length == 3 and
                 param[0].is_a? Rouge::Symbol and
