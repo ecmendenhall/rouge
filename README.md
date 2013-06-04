@@ -76,7 +76,7 @@ include:
 * Add tests!  This is so I don't break your lovely addition in the future by accident.
 * Commit and pull request!  (Bonus points for topic branches.)
 
-**Also**, if there's something in particular you want that's missing, feel free to put your vote in by [opening an Issue](https://github.com/kivikakk/rouge/issues/new) so I know where to direct my attention.
+**Also**, if there's something in particular you want that's missing, feel free to put your vote in by [opening an Issue](https://github.com/rouge-lang/rouge/issues/new) so I know where to direct my attention.
 
 ## authorship
 
