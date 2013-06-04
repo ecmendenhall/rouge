@@ -23,8 +23,8 @@ or on `#rouge` on Freenode.
 ## example
 
 See [boot.rg](https://github.com/rouge-lang/rouge/blob/master/lib/boot.rg),
-[em-rg](https://github.com/unnali/em-rg),
-[mechanize-rg](https://github.com/unnali/mechanize-rg), but to demonstrate
+[em-rg](https://github.com/kivikakk/em-rg),
+[mechanize-rg](https://github.com/kivikakk/mechanize-rg), but to demonstrate
 salient features:
 
 ``` clojure
@@ -76,11 +76,11 @@ include:
 * Add tests!  This is so I don't break your lovely addition in the future by accident.
 * Commit and pull request!  (Bonus points for topic branches.)
 
-**Also**, if there's something in particular you want that's missing, feel free to put your vote in by [opening an Issue](https://github.com/unnali/rouge/issues/new) so I know where to direct my attention.
+**Also**, if there's something in particular you want that's missing, feel free to put your vote in by [opening an Issue](https://github.com/rouge-lang/rouge/issues/new) so I know where to direct my attention.
 
 ## authorship
 
-Original author: [Arlen Christian Mart Cuss](https://github.com/unnali).
+Original author: [Arlen Christian Mart Cuss](https://github.com/kivikakk).
 
 Committers:
 
