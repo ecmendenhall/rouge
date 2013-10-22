@@ -181,7 +181,7 @@ class Rouge::Reader
         Integer(s)
       end
     elsif /\A#{RATIONAL}\z/o.match(s)
-      numerator, denominator =  s.split("/").map {|s| number(s) }
+      numerator, denominator = s.split("/").map {|n| number(n)}
       Rational(numerator, denominator)
     else
       reader_raise NumberFormatError, "Invalid number #{s}", s
@@ -189,13 +189,12 @@ class Rouge::Reader
   end
 
   def keyword
-    begin
-      slurp(/:"/)
-      retract!
+    advance!
+    if peek == ?"
       s = string
       s.intern
-    rescue UnexpectedCharacterError
-      slurp(/^:[a-zA-Z0-9\-_!\?\*\/]+/)[1..-1].intern
+    else
+      slurp(/^[a-zA-Z0-9\-_!\?\*\/]+/).intern
     end
   end
 

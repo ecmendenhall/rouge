@@ -470,6 +470,13 @@ describe Rouge::Reader do
     it { expect { @ns.read("#_") }.to raise_exception(ex) }
     it { expect { @ns.read('#"') }.to raise_exception(ex) }
   end
+
+  describe "symbol edge cases" do
+    it { @ns.read('{:foo "foo:"}').to_s.should eq({foo: "foo:"}.to_s) }
+    it { @ns.read('[(puts :foo) (puts "foo:")]').to_s.should eq(
+      [Rouge::Seq::Cons[Rouge::Symbol[:puts], :foo],
+       Rouge::Seq::Cons[Rouge::Symbol[:puts], "foo:"]].to_s) }
+  end
 end
 
 # vim: set sw=2 et cc=80:
