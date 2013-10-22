@@ -220,8 +220,8 @@ describe Rouge::Builtins do
   describe "if" do
     # TODO: refactor & break out individual assertions
     it "should execute one branch or the other" do
-      a = mock("a")
-      b = mock("b")
+      a = double("a")
+      b = double("b")
       a.should_receive(:call).with(any_args)
       b.should_not_receive(:call).with(any_args)
       subcontext = Rouge::Context.new context
@@ -232,7 +232,7 @@ describe Rouge::Builtins do
 
     # TODO: refactor & break out individual assertions
     it "should not do anything in the case of a missing second branch" do
-      a = mock("a")
+      a = double("a")
       a.should_not_receive(:call)
       subcontext = Rouge::Context.new context
       subcontext.set_here :a, a
@@ -259,7 +259,7 @@ describe Rouge::Builtins do
 
     # TODO: refactor & break out individual assertions
     it "should evaluate multiple arguments and return the last value" do
-      a = mock("a")
+      a = double("a")
       a.should_receive(:call)
       subcontext = Rouge::Context.new context
       subcontext.set_here :a, a

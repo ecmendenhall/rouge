@@ -15,8 +15,8 @@ describe Rouge do
 
     it "should contain the defn macro" do
       lambda {
-        @ns[:defn].should be_an_instance_of Rouge::Macro
-      }.should_not raise_exception(Rouge::Context::BindingNotFoundError)
+        @ns[:defn].should be_an_instance_of Rouge::Var
+      }.should_not raise_exception
     end
 
     it "should contain special variables" do

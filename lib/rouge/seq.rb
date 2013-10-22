@@ -31,6 +31,10 @@ module Rouge::Seq
       "(#{to_a.map(&:to_s).join " "})"
     end
 
+    def inspect
+      to_s
+    end
+
     def seq
       self
     end
