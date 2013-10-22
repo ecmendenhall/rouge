@@ -142,14 +142,14 @@ describe Rouge::Printer do
       end
 
       context "multiple-element maps" do
-        # XXX(arlen): these tests rely on stable-ish Hash order
+        # XXX(kivikakk): these tests rely on stable-ish Hash order
         it { Rouge.print({:a => 1, :b => 2}, "").should eq "{:a 1, :b 2}" }
         it { Rouge.print({:f => :f, :y => :y, :z => :z}, "").
                  should eq "{:f :f, :y :y, :z :z}" }
       end
 
       context "nested maps" do
-        # XXX(arlen): this test relies on stable-ish Hash order
+        # XXX(kivikakk): this test relies on stable-ish Hash order
         it { Rouge.print({:a => {:z => 9},
                           :b => {:q => Rouge::Symbol[:q]}}, "").
                  should eq "{:a {:z 9}, :b {:q q}}" }

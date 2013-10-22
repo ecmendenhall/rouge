@@ -1,7 +1,7 @@
 ;; -*- mode: clojure; -*-
 
 (ns ^{:doc "The Rouge core."
-      :author "Arlen Christian Mart Cuss"}
+      :author "Amelia Cuss"}
   rouge.core
   (:use ruby))
 
