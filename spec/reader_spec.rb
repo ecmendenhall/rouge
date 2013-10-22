@@ -473,6 +473,9 @@ describe Rouge::Reader do
 
   describe "symbol edge cases" do
     it { @ns.read('{:foo "foo:"}').to_s.should eq({foo: "foo:"}.to_s) }
+    it { @ns.read('[(puts :foo) (puts "foo:")]').to_s.should eq(
+      [Rouge::Seq::Cons[Rouge::Symbol[:puts], :foo],
+       Rouge::Seq::Cons[Rouge::Symbol[:puts], "foo:"]].to_s) }
   end
 end
 
