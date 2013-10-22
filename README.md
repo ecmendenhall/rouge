@@ -8,7 +8,9 @@ Why?
 * Quick boot time (currently around 0.1s).
 * Ruby's gems tend to be modern with decent APIs.
 
-You can try a Rouge REPL online at **[Try Rouge](http://try.rouge.io)**, or install the gem to get the local REPL:
+<!-- You can try a Rouge REPL online at **[Try Rouge](http://try.rouge.io)**, or -->
+
+Install the gem to get the local REPL:
 
 ``` bash
 gem install rouge-lang
@@ -80,7 +82,7 @@ include:
 
 ## authorship
 
-Original author: [Arlen Christian Mart Cuss](https://github.com/kivikakk).
+Original author: [Amelia Cuss](https://github.com/kivikakk).
 
 Committers:
 
@@ -96,7 +98,7 @@ Unreserved thanks to the following people for their contributions.
 
 The [MIT license](http://opensource.org/licenses/MIT).
 
-Copyright &copy; 2012 Arlen Christian Mart Cuss
+Copyright &copy; 2012&ndash;2013 Amelia Cuss
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
