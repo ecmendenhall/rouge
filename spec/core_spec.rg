@@ -151,6 +151,11 @@
                           (swap! q inc) :very_bad)))
              @q))))
 
+(testing "partials"
+  (is (= 11 ((partial + 10) 1)))
+  (is (= 21 ((partial + 10 10) 1)))
+  (is (= 51 ((partial + 10 10 10 10 10) 1))))
+
 (testing "*command-line-args*"
   (is (= (class *command-line-args*)
          ruby/Array)))

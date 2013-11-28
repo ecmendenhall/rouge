@@ -380,6 +380,17 @@
   ([test result & rest]
    `(if ~test ~result (cond ~@rest))))
 
+(defn partial
+  ([f] f)
+  ([f arg1]
+   (fn [& args] (apply f arg1 args)))
+  ([f arg1 arg2]
+   (fn [& args] (apply f arg1 arg2 args)))
+  ([f arg1 arg2 arg3]
+   (fn [& args] (apply f arg1 arg2 arg3 args)))
+  ([f arg1 arg2 arg3 & more]
+   (fn [& args] (apply f arg1 arg2 arg3 (concat more args)))))
+
 (ns ^{:doc "Implemenations of functions from clojure.string."}
   rouge.string
   (:use rouge.core ruby))
