@@ -27,6 +27,9 @@
 (defn vector [& args]
   (.to_a args))
 
+(defn vec [coll]
+  (apply vector coll))
+
 (defmacro lazy-seq [& body]
   `(Rouge.Seq.Lazy. (fn [] ~@body)))
 
@@ -45,8 +48,40 @@
   (let [s (seq coll)]
     (if s (.count s) 0)))
 
-(defn = [a b]
-  (.== a b))
+(defmacro or
+  ([])
+  ([x] x)
+  ([x & xs] `(let [r# ~x]
+               (if r# r# (or ~@xs)))))
+
+(defn not [bool]
+  (or (.== bool nil)
+      (.== bool false)))
+
+(defmacro and
+  ([] true)
+  ([x] x)
+  ([x & xs] `(let [r# ~x]
+               (if (not r#) r# (and ~@xs)))))
+
+(defn next [coll]
+  (let [s (seq coll)]
+    (and s
+         (.next s))))
+
+(defn first [coll]
+  (let [s (seq coll)]
+    (and s
+         (.first s))))
+(defn =
+  ([a] true)
+  ([a b] (.== a b))
+  ([a b & more]
+   (if (.== a b)
+     (if (next more)
+       (apply = b (first more) (next more))
+       (.== b (first more)))
+     false)))
 
 (defn nil? [x]
   (.nil? x))
@@ -54,18 +89,6 @@
 (defn identical? [x y]
   "Returns true if x and y are the same object."
   (= (.object_id x) (.object_id y)))
-
-(defmacro or
-  ([])
-  ([x] x)
-  ([x & xs] `(let [r# ~x]
-               (if r# r# (or ~@xs)))))
-
-(defmacro and
-  ([] true)
-  ([x] x)
-  ([x & xs] `(let [r# ~x]
-               (if (not r#) r# (and ~@xs)))))
 
 (defn empty? [coll]
   (or (nil? coll)
@@ -103,10 +126,6 @@
   (or (.is_a? coll Rouge.Seq.ISeq)
       (.is_a? coll Array)))
 
-(defn not [bool]
-  (or (= bool nil)
-      (= bool false)))
-
 (defn + [& args]
   (if (empty? args)
     0
@@ -128,11 +147,14 @@
 (defn require [lib]
   (.send Object :require lib))
 
-(defn range [from til]
-  ; XXX this will blow so many stacks
-  (if (= from til)
-    Rouge.Seq.Empty
-    (cons from (range (+ 1 from) til))))
+(defn range
+  ([til] (range 0 til 1))
+  ([from til] (range from til 1))
+  ([from til step]
+   ; XXX this will blow so many stacks
+   (if (= from til)
+     Rouge.Seq.Empty
+     (cons from (range (+ step from) til step)))) )
 
 (defn seq? [object]
   (or (= (class object) Rouge.Seq.Cons)
@@ -146,11 +168,6 @@
 (defn nth [coll index]
   (.[] (seq coll) index))
 
-(defn first [coll]
-  (let [s (seq coll)]
-    (and s
-         (.first s))))
-
 (defn ffirst [coll]
   (first (first coll)))
 
@@ -160,19 +177,72 @@
       (.more s)
       ())))
 
-(defn next [coll]
-  (let [s (seq coll)]
-    (and s
-         (.next s))))
-
 (defn second [coll]
   (first (next coll)))
 
-(defn > [a b]
-  (.> a b))
+(defn >
+  ([a] true)
+  ([a b] (.> a b))
+  ([a b & more]
+   (if (> a b)
+     (if (next more)
+       (> b (first more) (next more))
+       (> b (first more)))
+     false)))
 
-(defn < [a b]
-  (.< a b))
+(defn <
+  ([a] true)
+  ([a b] (.< a b))
+  ([a b & more]
+   (if (< a b)
+     (if (next more)
+       (< b (first more) (next more))
+       (< b (first more)))
+     false)))
+
+(defn >=
+  ([a] true)
+  ([a b] (.>= a b))
+  ([a b & more]
+   (if (>= a b)
+     (if (next more)
+       (>= b (first more) (next more))
+       (>= b (first more)))
+     false)))
+
+(defn <=
+  ([a] true)
+  ([a b] (.<= a b))
+  ([a b & more]
+   (if (<= a b)
+     (if (next more)
+       (<= b (first more) (next more))
+       (<= b (first more)))
+     false)))
+
+(defn rand
+  ([] (.rand Kernel))
+  ([n] (* n (rand))))
+
+(defn rand-int [n] (.to_i (rand n)))
+
+(defn subs
+  ([string start]
+   (.slice string start (count string)))
+  ([string start end]
+   (.slice string start end)))
+
+(defn string? [x] (.is_a? x String))
+
+(defn symbol? [x] (.is_a? x ruby/Rouge.Symbol))
+
+(defn keyword? [x] (.is_a? x ruby/Symbol))
+
+(defn not=
+  ([x] false)
+  ([x y] (not (= x y)))
+  ([x y & more]
+   (not (apply = x y more))))
 
 (defmacro macroexpand [form]
   `(.compile Rouge.Compiler (.ns (context)) (Set.) ~form))
@@ -390,6 +460,38 @@
    (fn [& args] (apply f arg1 arg2 arg3 args)))
   ([f arg1 arg2 arg3 & more]
    (fn [& args] (apply f arg1 arg2 arg3 (concat more args)))))
+
+(defmacro when-let [bindings & body]
+  (let [form (first bindings) tst (second bindings)]
+    `(let [temp# ~tst]
+       (when temp#
+         (let [~form temp#]
+           ~@body)))))
+
+(defn take
+  [n coll]
+  (lazy-seq
+    (when (pos? n)
+      (when-let [s (seq coll)]
+        (cons (first s) (take (dec n) (rest s)))))))
+
+(defn drop
+  [n coll]
+  (let [step (fn [n coll]
+               (let [s (seq coll)]
+                 (if (and (pos? n) s)
+                   (drop (dec n) (rest s))
+                   s)))]
+    (lazy-seq (step n coll))))
+
+(defn repeat
+  ([x] (lazy-seq (cons x (repeat x))))
+  ([n x] (take n (repeat x))))
+
+(defn identity [x] x)
+
+(defn constantly [x] (fn [& args] x))
+
 
 (ns ^{:doc "Implemenations of functions from clojure.string."}
   rouge.string

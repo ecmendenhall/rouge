@@ -98,6 +98,7 @@ class << Rouge::Builtins
       block = nil
     end
 
+
     original_argv = argv.dup.freeze
 
     fn = lambda {|*inner_args, &blockgiven|
@@ -106,7 +107,6 @@ class << Rouge::Builtins
       arity = inner_args.length
 
       if argv[1].is_a? Array
-        p argv.to_a
         fun = argv.find {|f| f[1].length == arity } ||
               argv.find {|f| f[1].length > arity }
         _, argv, *body = fun

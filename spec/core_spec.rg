@@ -32,7 +32,100 @@
   (is (not (sequential? nil))))
 
 (testing "="
-  (is (.== false (= () nil))))
+  (is (.== false (= () nil)))
+  (is (.== true (= 1)))
+  (is (.== true (= 1 1)))
+  (is (.== false (= 1 2)))
+  (is (.== true (= 1 1 1)))
+  (is (.== true (= 1 1 1 1)))
+  (is (.== true (= 1 1 1 1 1)))
+  (is (.== false (= 1 1 2)))
+  (is (.== false (= 1 2 1)))
+  (is (.== false (= 2 1 1))))
+
+(testing ">"
+  (is (= true (> 1)))
+  (is (= false (> 1 1)))
+  (is (= true (> 2 1)))
+  (is (= true (> 3 2 1)))
+  (is (= false (> 2 3 1))))
+
+(testing ">="
+  (is (= true (>= 1)))
+  (is (= true (>= 1 1)))
+  (is (= true (>= 2 1)))
+  (is (= true (>= 3 2 1)))
+  (is (= false (>= 2 3 1)))
+  (is (= true (>= 3 3 3))))
+
+(testing "<="
+  (is (= true (<= 1)))
+  (is (= true (<= 1 1)))
+  (is (= true (<= 1 2)))
+  (is (= true (<= 1 2 3)))
+  (is (= false (<= 1 3 2)))
+  (is (= true (<= 3 3 3))))
+
+(testing "<"
+  (is (= true (< 1)))
+  (is (= false (< 1 1)))
+  (is (= true (< 1 2)))
+  (is (= true (< 1 2 3)))
+  (is (= false (< 1 3 2))))
+
+(testing "rand"
+  (is (#(and (>= % 0) (< % 1)) (rand)))
+  (is (#(and (>= % 0) (< % 10)) (rand 10))))
+
+(testing "rand-int"
+  (is (#(and (>= % 0)
+             (< % 10)
+             (.is_a? % Integer))
+             (rand-int 10))))
+
+(testing "subs"
+  (is (= "Sad World" (subs "Sick Sad World" 5)))
+  (is (= "Sick" (subs "Sick Sad World" 0 4))))
+
+(testing "string?"
+  (is (string? "Sick Sad World"))
+  (is (= false (string? 12345))))
+
+(testing "symbol?"
+  (is (symbol? 'wat))
+  (is (= false (symbol? "wat"))))
+
+(testing "keyword?"
+  (is (keyword? :wat))
+  (is (= false (keyword? 'wat))))
+
+;; XXX How should Rouge handle chars?
+;; user=> (map .class (seq "wut"))
+;; (ruby/String ruby/String ruby/String)
+
+(testing "not="
+  (is (= false (not= 1)))
+  (is (not= 1 2))
+  (is (= false (not= 1 1 1 1))))
+
+(testing "take"
+  (is (= '(0 1 2) (take 3 (range 10)))))
+
+(testing "drop"
+  (is (= '(6 7 8) (take 3 (drop 5 (range 1 11))))))
+
+(testing "repeat"
+  (is (= '(5 5 5) (take 3 (repeat 5))))
+  (is (= '(:a :a :a) (repeat 3 :a))))
+
+(testing "identity"
+  (is (= "pretty boring!" (identity "pretty boring!"))))
+
+(testing "constantly"
+  (let [always-lol (constantly "lol")]
+    (is (= "lol" (always-lol 1)))
+    (is (= "lol" (always-lol :a :b)))
+    (is (= "lol" (always-lol "tro" "lo" "lo" "lo" "lo")))))
 
 (testing "seq"
   (is (.nil? (seq ())))
@@ -41,8 +134,13 @@
   (is (.nil? (seq ""))))
 
 (testing "first"
+  (is (= 1 (first [1])))
   (is (.nil? (first nil)))
   (is (.nil? (first ()))))
+
+(testing "ffirst"
+  (is (= 1 (ffirst [[1 2]])))
+  (is (.nil? (ffirst ()))))
 
 (testing "rest"
   (is (.== (rest nil) ()))
@@ -151,12 +249,95 @@
                           (swap! q inc) :very_bad)))
              @q))))
 
-(testing "partials"
+(testing "partial"
   (is (= 11 ((partial + 10) 1)))
   (is (= 21 ((partial + 10 10) 1)))
   (is (= 51 ((partial + 10 10 10 10 10) 1))))
 
+(testing "concat"
+  ;; XXX In Clojure, the following three expressions
+  ;; evaluate to the empty seq.
+  (is (= nil (concat)))
+  (is (= nil (concat [])))
+  (is (= nil (concat [] [])))
+
+  (is (= (seq [1]) (concat [1] [])))
+  (is (= (seq [1]) (concat [] [1])))
+  (is (= (seq [1 2]) (concat [1] [2])))
+  (is (= (seq [1 2 3 4]) (concat [1 2] [3 4])))
+  (is (= (seq [1 2 3 4 5 6 7 8 9 0])
+         (concat [1] [2 3] [4 5 6] [7] [8 9 0]))))
+
+(testing "when"
+  (is (= nil (when true)))
+  (is (= nil (when false)))
+  (is (= nil (when false :truthy)))
+  (is (= :truthy (when true :truthy))))
+
+(testing "vector"
+  (is (= [] (vector)))
+  (is (= [1] (vector 1)))
+  (is (= [1 2 3 4 5]
+         (vector 1 2 3 4 5))))
+
+(testing "vec"
+  (is (= [] (vec [])))
+  (is (= [1] (vec '(1))))
+  (is (= [1 2 3 4 5]
+         (vec '(1 2 3 4 5))))
+
+  ;; XXX Converting a Rouge set to a vector
+  ;; returns elements in order. Order isn't
+  ;; guaranteed in Clojure.
+  (is (= [1 3 2 5 4]
+         (vec #{1 3 2 5 4})))
+  (is (= [[:a 1] [:b 2]]
+         (vec {:a 1 :b 2}))))
+
+(testing "cons"
+  (is (= '(nil) (cons nil nil)))
+  (is (= '(nil) (cons nil '())))
+  (is (= '(1)   (cons 1 '())))
+  (is (= '(())   (cons '() '())))
+
+  ;; XXX Vectors should be seqable.
+  ;; (is (= '(nil) (cons nil [])))
+  ;; (is (= [1] (cons 1 [])))
+  )
+
+(testing "count"
+  (is (= 0 (count [])))
+  (is (= 1 (count [1])))
+  (is (= 10 (count (range 0 10)))))
+
+(testing "range"
+  (is (= '(0 1 2 3 4)
+         (range 5)))
+  (is (= '(5 6 7 8 9)
+         (range 5 10)))
+  (is (= '(0 2 4 6 8)
+         (range 0 10 2))))
+
+(testing "seq?"
+  (is (seq? '()))
+  (is (seq? '(1 2 3)))
+  (is (= false (seq? [])))
+  (is (= false (seq? {:a 1 :b 2})))
+  (is (= false (seq? #{1 2 3})))
+  (is (= false (seq? #(+ % 1))))
+  (is (= false (seq? :a)))
+  (is (= false (seq? 1)))
+  (is (= false (seq? "string")))
+  (is (= false (seq? #"regex"))))
+
+(testing "when-let"
+  (is (= :body
+         (when-let [a true] :body)))
+  (is (= nil
+         (when-let [a false] :body))))
+
 (testing "*command-line-args*"
   (is (= (class *command-line-args*)
          ruby/Array)))
+
 ; vim: set ft=clojure:
