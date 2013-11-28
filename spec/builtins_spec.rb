@@ -6,6 +6,15 @@ describe Rouge::Builtins do
   let(:ns) { Rouge::Namespace.new(:"user.spec").clear }
   let(:context) { Rouge::Context.new ns }
 
+  let(:read) { lambda {|input|
+    Rouge::Reader.new(ns, input).lex
+  } }
+
+  let(:compile) { lambda {|input|
+    form = read.(input)
+    Rouge::Compiler.compile(ns, Set.new, form)
+  } }
+
   before { ns.refer Rouge::Namespace[:"rouge.builtin"] }
 
   describe "let" do
@@ -126,6 +135,52 @@ describe Rouge::Builtins do
         context.readeval('(fn [& rest])').call(1, 2, 3)
         context.readeval('(fn [& rest])').call(*(1..10000))
       }.to_not raise_exception
+    end
+
+    context "arity overloading" do
+
+      it "should include a list of arities when compiled" do
+        single_arity = "(fn [x] 1)"
+        multi_arity  = "(fn ([] 0) ([_] 1))"
+        compiled = compile.(single_arity)
+        compile.(single_arity).to_a.should == [Rouge::Symbol[:fn],
+                                               [Rouge::Symbol[:x]],
+                                               1]
+        compile.(multi_arity).to_a.should eq(
+          [Rouge::Symbol[:fn],
+           [[Rouge::Symbol[:fn], [], 0],
+            [Rouge::Symbol[:fn], [Rouge::Symbol[:_]], 1]]])
+      end
+
+      it "should create functions with overloaded arity" do
+        fn = <<-FN
+        (fn
+          ([] 0)
+          ([a] 1)
+          ([a b] 2)
+          ([a b & c] :more))
+        FN
+        context.readeval(fn).call().should == 0
+        context.readeval(fn).call(1).should == 1
+        context.readeval(fn).call(1, 2).should == 2
+        context.readeval(fn).call(1, 2, 3).should == :more
+      end
+
+      it "multi-arity functions should be order-agnostic" do
+        fn = <<-FN
+        (fn
+          ([a b] 2)
+          ([a] 1)
+          ([a b & c] :more)
+          ([] 0))
+        FN
+        context.readeval(fn).call().should == 0
+        context.readeval(fn).call(1).should == 1
+        context.readeval(fn).call(1, 2).should == 2
+        context.readeval(fn).call(1, 2, 3).should == :more
+      end
+
+      xit "should handle block args"
     end
 
     describe "argument binding" do

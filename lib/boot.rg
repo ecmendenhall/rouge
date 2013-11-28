@@ -151,6 +151,9 @@
     (and s
          (.first s))))
 
+(defn ffirst [coll]
+  (first (first coll)))
+
 (defn rest [coll]
   (let [s (seq coll)]
     (if s
