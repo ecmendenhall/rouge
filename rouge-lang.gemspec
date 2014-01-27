@@ -3,8 +3,8 @@
 require File.expand_path('../lib/rouge/version', __FILE__)
 
 Gem::Specification.new do |gem|
-  gem.authors       = ["Amelia Cuss"]
-  gem.email         = ["amelia@kivikakk.ee"]
+  gem.authors       = ["Yuki Izumi"]
+  gem.email         = ["rubygems@kivikakk.ee"]
   gem.description   = %q{Ruby + Clojure = Rouge.}
   gem.summary       = %q{An implementation of Clojure for Ruby.}
   gem.homepage      = "https://github.com/rouge-lang/rouge"

@@ -1,7 +1,7 @@
 ;; -*- mode: clojure; -*-
 
 (ns ^{:doc "Spec tests for the Rouge core."
-      :author "Amelia Cuss"}
+      :author "Yuki Izumi"}
   spec.rouge.core
   (:use rouge.test))
 

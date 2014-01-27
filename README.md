@@ -82,7 +82,7 @@ include:
 
 ## authorship
 
-Original author: [Amelia Cuss](https://github.com/kivikakk).
+Original author: [Yuki Izumi](https://github.com/kivikakk).
 
 Committers:
 
@@ -98,7 +98,7 @@ Unreserved thanks to the following people for their contributions.
 
 The [MIT license](http://opensource.org/licenses/MIT).
 
-Copyright &copy; 2012&ndash;2013 Amelia Cuss
+Copyright &copy; 2012&ndash;2013 Yuki Izumi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
