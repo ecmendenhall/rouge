@@ -186,7 +186,7 @@
   ([a b & more]
    (if (> a b)
      (if (next more)
-       (> b (first more) (next more))
+       (apply > b (first more) (next more))
        (> b (first more)))
      false)))
 
@@ -196,7 +196,7 @@
   ([a b & more]
    (if (< a b)
      (if (next more)
-       (< b (first more) (next more))
+       (apply < b (first more) (next more))
        (< b (first more)))
      false)))
 
@@ -206,7 +206,7 @@
   ([a b & more]
    (if (>= a b)
      (if (next more)
-       (>= b (first more) (next more))
+       (apply >= b (first more) (next more))
        (>= b (first more)))
      false)))
 
@@ -216,7 +216,7 @@
   ([a b & more]
    (if (<= a b)
      (if (next more)
-       (<= b (first more) (next more))
+       (apply <= b (first more) (next more))
        (<= b (first more)))
      false)))
 
@@ -492,6 +492,28 @@
 
 (defn constantly [x] (fn [& args] x))
 
+(defn keys [m]
+  (map first (seq m)))
+
+(defn vals [m]
+  (map second (seq m)))
+
+(defn complement [f]
+  (fn [& args] (not (apply f args))))
+
+(defn every? [pred coll]
+  (cond
+    (nil? (seq coll)) true
+    (pred (first coll)) (every? pred (next coll))
+    :else false))
+
+(defn interleave
+  [c1 c2]
+   (lazy-seq
+     (let [s1 (seq c1) s2 (seq c2)]
+       (when (and s1 s2)
+         (cons (first s1) (cons (first s2)
+                                (interleave (rest s1) (rest s2))))))))
 
 (ns ^{:doc "Implemenations of functions from clojure.string."}
   rouge.string

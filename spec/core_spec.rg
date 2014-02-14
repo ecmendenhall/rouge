@@ -48,23 +48,29 @@
   (is (= false (> 1 1)))
   (is (= true (> 2 1)))
   (is (= true (> 3 2 1)))
-  (is (= false (> 2 3 1))))
+  (is (= true (> 5 4 3 2 1 0)))
+  (is (= false (> 2 3 1)))
+  (is (= false (> 4 5 3 2 1 0))))
 
 (testing ">="
   (is (= true (>= 1)))
   (is (= true (>= 1 1)))
   (is (= true (>= 2 1)))
   (is (= true (>= 3 2 1)))
+  (is (= true (>= 5 4 3 2 1 0)))
   (is (= false (>= 2 3 1)))
-  (is (= true (>= 3 3 3))))
+  (is (= true (>= 3 3 3)))
+  (is (= false (>= 5 4 3 2 0 1))))
 
 (testing "<="
   (is (= true (<= 1)))
   (is (= true (<= 1 1)))
   (is (= true (<= 1 2)))
   (is (= true (<= 1 2 3)))
+  (is (= true (<= 0 1 2 3 4 5)))
   (is (= false (<= 1 3 2)))
-  (is (= true (<= 3 3 3))))
+  (is (= true (<= 3 3 3)))
+  (is (= false (<= 0 1 2 3 5 4))))
 
 (testing "<"
   (is (= true (< 1)))
@@ -126,6 +132,31 @@
     (is (= "lol" (always-lol 1)))
     (is (= "lol" (always-lol :a :b)))
     (is (= "lol" (always-lol "tro" "lo" "lo" "lo" "lo")))))
+
+(testing "keys"
+  (let [nested-map {:a 1 :b 2 :c {:d 3}}]
+    (is (= '(:a :b :c) (keys nested-map)))))
+
+(testing "vals"
+  (let [nested-map {:a 1 :b 2 :c {:d 3}}]
+    (is (= '(1 2 {:d 3}) (vals nested-map)))))
+
+(testing "complement"
+  (let [three? (fn [x] (= 3 x))
+        not-three? (complement three?)]
+  (is (= true (not-three? 4)))
+  (is (= false (not-three? 3)))))
+
+(testing "every?"
+  (is (= true (every? even? [])))
+  (is (= false (every? even? [1])))
+  (is (= true (every? even? [2])))
+  (is (= true (every? even? [2 4 6 8 10])))
+  (is (= false (every? even? [2 4 6 8 9]))))
+
+(testing "interleave"
+  (is (= '(1 6 2 7 3 8 4 9 5 0)
+         (interleave [1 2 3 4 5] [6 7 8 9 0]))))
 
 (testing "seq"
   (is (.nil? (seq ())))
