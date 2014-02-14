@@ -98,7 +98,6 @@ class << Rouge::Builtins
       block = nil
     end
 
-
     original_argv = argv.dup.freeze
 
     fn = lambda {|*inner_args, &blockgiven|
@@ -106,9 +105,9 @@ class << Rouge::Builtins
       argv = original_argv.dup
       arity = inner_args.length
 
-      if argv[1].is_a? Array
+      if argv[0].is_a? Array
         fun = argv.find {|f| f[1].length == arity } ||
-              argv.find {|f| f[1].length > arity }
+              argv.find {|f| f[1].include? Rouge::Symbol[:&] }
         _, argv, *body = fun
 
         if argv[-2] == Rouge::Symbol[:&]
