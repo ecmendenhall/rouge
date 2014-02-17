@@ -74,13 +74,7 @@ class << Rouge::Builtins
     [Rouge::Symbol[:quote], form]
   end
 
-  def fn(context, *args)
-    if args[0].is_a? Rouge::Symbol
-      name = args.shift.to_sym
-    end
-
-    argv, *body = args
-
+  def _extract_rest(argv)
     if argv[-2] == Rouge::Symbol[:&]
       rest = argv[-1]
       argv = argv[0...-2]
@@ -91,18 +85,33 @@ class << Rouge::Builtins
       rest = nil
     end
 
+    return argv, rest
+  end
+
+  def _extract_block(argv)
     if argv[-2] == Rouge::Symbol[:|]
       block = argv[-1]
       argv = argv[0...-2]
     else
       block = nil
     end
+    return argv, block
+  end
 
-    original_argv = argv.dup.freeze
+  def fn(context, *args)
+    if args[0].is_a? Rouge::Symbol
+      name = args.shift.to_sym
+    end
+
+    argv, *body = args
+
+    argv, rest = _extract_rest(argv)
+    argv, block = _extract_block(argv)
+    args = argv.dup.freeze
 
     fn = lambda {|*inner_args, &blockgiven|
 
-      argv = original_argv.dup
+      argv = args.dup
       arity = inner_args.length
 
       if argv[0].is_a? Array
@@ -110,22 +119,8 @@ class << Rouge::Builtins
               argv.find {|f| f[1].include? Rouge::Symbol[:&] }
         _, argv, *body = fun
 
-        if argv[-2] == Rouge::Symbol[:&]
-          rest = argv[-1]
-          argv = argv[0...-2]
-        elsif argv[-4] == Rouge::Symbol[:&] and argv[-2] == Rouge::Symbol[:|]
-          rest = argv[-3]
-          argv = argv[0...-4] + argv[-2..-1]
-        else
-          rest = nil
-        end
-
-        if argv[-2] == Rouge::Symbol[:|]
-          block = argv[-1]
-          argv = argv[0...-2]
-        else
-          block = nil
-        end
+       argv, rest = _extract_rest(argv)
+       argv, block = _extract_block(argv)
       end
 
       if !rest ? (inner_args.length != argv.length) :
